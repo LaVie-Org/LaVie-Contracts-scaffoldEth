@@ -50,6 +50,7 @@ module.exports = {
   // (you will need to restart the `yarn run start` dev server after editing the .env)
 
   networks: {
+
     localhost: {
       url: "http://localhost:8545",
       /*      

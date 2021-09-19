@@ -1,5 +1,7 @@
 // deploy/00_deploy_your_contract.js
 
+const { ethers } = require("ethers");
+
 //const { ethers } = require("hardhat");
 
 module.exports = async ({ getNamedAccounts, deployments }) => {
@@ -11,6 +13,25 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     //args: [ "Hello", ethers.utils.parseEther("1.5") ],
     log: true,
   });
+
+  const lavToken = await deploy("LavToken",{
+    from: deployer,
+    // args:
+    log:true,
+  })
+
+  const daiToken = await deploy("DaiToken",{
+    from: deployer,
+    // args:
+    log:true,
+  })
+
+  await deploy('StakeManager',{
+    from: deployer,
+    args:[daiToken.address, lavToken.address],
+    log:true,
+  })
+
 
   /*
     // Getting a previously deployed contract
