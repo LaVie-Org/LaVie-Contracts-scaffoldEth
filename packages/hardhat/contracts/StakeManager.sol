@@ -1,8 +1,9 @@
-pragma solidity >=0.8.0 <0.9.0;
+pragma solidity ^0.8.4;
 //SPDX-License-Identifier: MIT
 
 import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "./DaiToken.sol";
 import "./LavToken.sol";
 
 contract StakeManager {
@@ -18,7 +19,7 @@ contract StakeManager {
 
     string public name = "StakeManager";
 
-    IERC20 public daiToken;
+    DaiToken public daiToken;
     LavToken public lavToken;
 
     event Stake(address indexed from, uint256 amount);
@@ -26,15 +27,16 @@ contract StakeManager {
     event YieldWithdraw(address indexed to, uint256 amount);
 
     //inject the token addresses
-    constructor(IERC20 _daiToken, LavToken _lavToken) {
+    constructor(DaiToken _daiToken, LavToken _lavToken) {
         daiToken = _daiToken;
         lavToken = _lavToken;
     }
 
     /// Core function shells
-    function stake() public payable{
+    function stake(uint256 amount) public {
+
         require(
-            msg.value > 0 && daiToken.balanceOf(msg.sender) >= msg.value,
+            amount > 0 && daiToken.balanceOf(msg.sender) >= amount,
             "You cannot stake zero tokens"
         );
         //if already staking, add unrealised yield to lavBalance
@@ -43,14 +45,14 @@ contract StakeManager {
             lavBalance[msg.sender] += toTransfer;
         }
         //transfer
-        console.log(daiToken.allowance(msg.sender, address(this)));
-        IERC20(daiToken).approve(msg.sender, msg.value);
-        IERC20(daiToken).transferFrom(msg.sender, address(this), msg.value);
-        stakingBalance[msg.sender] += msg.value;
+        // daiToken.increaseAllowance(address(this), amount);
+        // daiToken.approve(address(this), amount);
+        daiToken.transferFrom(msg.sender, address(this), amount);
+        stakingBalance[msg.sender] += amount;
         //reset starttime
         startTime[msg.sender] = block.timestamp;
         isStaking[msg.sender] = true;
-        emit Stake(msg.sender, msg.value);
+        emit Stake(msg.sender, amount);
     }
 
     function unstake(uint256 amount) public {
@@ -92,18 +94,17 @@ contract StakeManager {
         emit YieldWithdraw(msg.sender, toTransfer);
     }
 
-    function calculateYieldTime(address user) public view returns(uint256){
+    function calculateYieldTime(address user) public view returns (uint256) {
         uint256 end = block.timestamp;
         uint256 totalTime = end - startTime[user];
         return totalTime;
     }
 
-    function calculateYieldTotal(address user) public view returns (uint256){
+    function calculateYieldTotal(address user) public view returns (uint256) {
         uint256 time = calculateYieldTime(user) * 10**18;
         uint256 rate = 86400;
         uint256 timeRate = time / rate;
-        uint256 rawYield = (stakingBalance[user] * timeRate)/ 10**18;
+        uint256 rawYield = (stakingBalance[user] * timeRate) / 10**18;
         return rawYield;
-
     }
 }

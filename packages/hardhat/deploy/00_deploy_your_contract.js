@@ -32,7 +32,6 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     log:true,
   })
 
-
   /*
     // Getting a previously deployed contract
     const YourContract = await ethers.getContract("YourContract", deployer);
@@ -69,4 +68,4 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   });
   */
 };
-module.exports.tags = ["YourContract"];
+module.exports.tags = ["YourContract","DaiToken","LavToken"];
