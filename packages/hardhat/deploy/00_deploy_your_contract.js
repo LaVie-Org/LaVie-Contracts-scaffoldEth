@@ -4,7 +4,7 @@ const { ethers } = require("ethers");
 
 //const { ethers } = require("hardhat");
 
-module.exports = async ({ getNamedAccounts, deployments }) => {
+module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
   await deploy("YourContract", {
@@ -31,6 +31,21 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     args:[daiToken.address, lavToken.address],
     log:true,
   })
+
+  const accounts = await deploy('Accounts',{
+    from: deployer,
+    //args:[daiToken.address, lavToken.address],
+    log:true,
+  })
+
+  const game = await deploy('Game',{
+    from: deployer,
+    args:[accounts.address],
+    log:true,
+  })
+
+  const Accounts = await ethers.getContractAt("Accounts", accounts.address);
+  await Accounts.transferOwnership(game.address);
 
   /*
     // Getting a previously deployed contract
@@ -68,4 +83,4 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
   });
   */
 };
-module.exports.tags = ["YourContract","DaiToken","LavToken"];
+module.exports.tags = ["YourContract","DaiToken","LavToken", "Accounts", "Game"];
