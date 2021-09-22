@@ -13,10 +13,14 @@ import "hardhat/console.sol";
 //@dev will safeTransfer preminted/new items
 
 contract Items is ERC1155Supply, Ownable {
-    constructor() ERC1155('') {
-        //initial mint here
-        //_mint(address(this), id, amount, data);
-        //_mint(address(this), 2, 100, "");
+    /*struct ItemSpecs {
+        uint256 minted; // the amount of items minted
+        uint256 released; // the amount of items that have been trasnferred to players
+    }
+    mapping(uint256 => ItemSpecs) public inventory;*/
+
+    constructor(uint256[] memory ids, uint256[] memory amounts) ERC1155('') {
+        mintBatch(address(this), ids, amounts, "");
     }
 
     function setURI(string memory newuri) public onlyOwner {
