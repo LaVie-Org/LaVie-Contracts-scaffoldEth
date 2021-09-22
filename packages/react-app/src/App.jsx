@@ -487,6 +487,36 @@ function App(props) {
               Hints
             </Link>
           </Menu.Item>
+          <Menu.Item key="/game">
+            <Link
+              onClick={() => {
+                setRoute("/game");
+              }}
+              to="/game"
+            >
+              Game
+            </Link>
+          </Menu.Item>
+          <Menu.Item key="/items">
+            <Link
+              onClick={() => {
+                setRoute("/items");
+              }}
+              to="/items"
+            >
+              Items
+            </Link>
+          </Menu.Item>
+          <Menu.Item key="/accounts">
+            <Link
+              onClick={() => {
+                setRoute("/accounts");
+              }}
+              to="/accounts"
+            >
+              Accounts
+            </Link>
+          </Menu.Item>
           <Menu.Item key="/exampleui">
             <Link
               onClick={() => {
@@ -556,6 +586,36 @@ function App(props) {
           <Route path="/daitoken">
             <Contract
               name="DaiToken"
+              signer={userSigner}
+              provider={localProvider}
+              address={address}
+              blockExplorer={blockExplorer}
+              contractConfig={contractConfig}
+            />
+          </Route>
+          <Route path="/accounts">
+            <Contract
+              name="Accounts"
+              signer={userSigner}
+              provider={localProvider}
+              address={address}
+              blockExplorer={blockExplorer}
+              contractConfig={contractConfig}
+            />
+          </Route>
+          <Route path="/items">
+            <Contract
+              name="Items"
+              signer={userSigner}
+              provider={localProvider}
+              address={address}
+              blockExplorer={blockExplorer}
+              contractConfig={contractConfig}
+            />
+          </Route>
+          <Route path="/game">
+            <Contract
+              name="Game"
               signer={userSigner}
               provider={localProvider}
               address={address}
