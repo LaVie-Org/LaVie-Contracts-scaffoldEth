@@ -83,7 +83,7 @@ contract Accounts is ERC721, ERC721URIStorage, ContextMixin, Ownable {
         address from,
         address to,
         uint256 tokenId
-    ) public override {
+    ) public override onlyOwner {
         super.transferFrom(from, to, tokenId);
         _accountOwner.set(tokenId, to);
     }
