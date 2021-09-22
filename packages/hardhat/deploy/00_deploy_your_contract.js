@@ -32,6 +32,12 @@ module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
     log:true,
   })
 
+  const items = await deploy('Items',{
+    from: deployer,
+    //args:[daiToken.address, lavToken.address],
+    log:true,
+  })
+
   const accounts = await deploy('Accounts',{
     from: deployer,
     //args:[daiToken.address, lavToken.address],
@@ -40,12 +46,12 @@ module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
 
   const game = await deploy('Game',{
     from: deployer,
-    args:[accounts.address],
+    args:[accounts.address, items.address],
     log:true,
   })
 
-  const Accounts = await ethers.getContractAt("Accounts", accounts.address);
-  await Accounts.transferOwnership(game.address);
+  /*const Accounts = await ethers.getContractAt("Accounts", accounts.address);
+  await Accounts.transferOwnership(game.address);*/
 
   /*
     // Getting a previously deployed contract
@@ -83,4 +89,4 @@ module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
   });
   */
 };
-module.exports.tags = ["YourContract","DaiToken","LavToken", "Accounts", "Game"];
+module.exports.tags = ["YourContract","DaiToken","LavToken", "Items", "Accounts", "Game"];

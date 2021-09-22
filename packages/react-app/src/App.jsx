@@ -497,6 +497,16 @@ function App(props) {
               Game
             </Link>
           </Menu.Item>
+          <Menu.Item key="/items">
+            <Link
+              onClick={() => {
+                setRoute("/items");
+              }}
+              to="/items"
+            >
+              Items
+            </Link>
+          </Menu.Item>
           <Menu.Item key="/accounts">
             <Link
               onClick={() => {
@@ -586,6 +596,16 @@ function App(props) {
           <Route path="/accounts">
             <Contract
               name="Accounts"
+              signer={userSigner}
+              provider={localProvider}
+              address={address}
+              blockExplorer={blockExplorer}
+              contractConfig={contractConfig}
+            />
+          </Route>
+          <Route path="/items">
+            <Contract
+              name="Items"
               signer={userSigner}
               provider={localProvider}
               address={address}
