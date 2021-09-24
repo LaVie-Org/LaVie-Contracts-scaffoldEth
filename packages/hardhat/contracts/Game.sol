@@ -38,5 +38,4 @@ contract Game {
         require(msg.sender == accounts.getAccountOwner(tokenId), "La Vie: Account not owned");
         accounts.playerReceivesItemFromGame(player, tokenId, itemId);
     }
-
 }

@@ -53,8 +53,6 @@ module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
     log:true,
   })
 
-  /*const Accounts = await ethers.getContractAt("Accounts", accounts.address);
-  await Accounts.transferOwnership(game.address);*/
   // await lavToken._transferOwnership(stakeManager.address);
   const lav = await ethers.getContract("LavToken", deployer);
   await lav._transferOwnership(stakeManager.address);
