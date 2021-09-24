@@ -5,6 +5,7 @@ import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./DaiToken.sol";
 import "./LavToken.sol";
+import "./interfaces/ISuperToken.sol";
 
 contract StakeManager {
     // userAddress => stakingBalance
@@ -21,58 +22,79 @@ contract StakeManager {
 
     DaiToken public daiToken;
     LavToken public lavToken;
+    ISuperToken public laVxToken;
 
     event Stake(address indexed from, uint256 amount);
     event Unstake(address indexed from, uint256 amount);
     event YieldWithdraw(address indexed to, uint256 amount);
 
     //inject the token addresses
-    constructor(DaiToken _daiToken, LavToken _lavToken) {
+    constructor(
+        DaiToken _daiToken,
+        LavToken _lavToken,
+        ISuperToken _laVxToken
+    ) {
         daiToken = _daiToken;
         lavToken = _lavToken;
+        laVxToken = _laVxToken;
     }
 
     /// Core function shells
-    function stake(uint256 amount) public {
-
+    function stake(uint256 amount) external payable {
         require(
             amount > 0 && daiToken.balanceOf(msg.sender) >= amount,
-            "You cannot stake zero tokens"
+            "Not enough DAI tokens"
         );
-        //if already staking, add unrealised yield to lavBalance
-        if (isStaking[msg.sender] == true) {
-            uint256 toTransfer = calculateYieldTotal(msg.sender);
-            lavBalance[msg.sender] += toTransfer;
-        }
+        require(!isStaking[msg.sender], "already staking");
         //transfer
-        // daiToken.increaseAllowance(address(this), amount);
-        // daiToken.approve(address(this), amount);
         daiToken.transferFrom(msg.sender, address(this), amount);
         stakingBalance[msg.sender] += amount;
-        //reset starttime
-        startTime[msg.sender] = block.timestamp;
+
+        lavToken.mint(address(this), amount);
+
+        lavToken.increaseAllowance(address(lavToken), amount);
+
+        laVxToken.upgrade(amount);
+
+        //calculate earned lav
+        lavBalance[msg.sender] += amount;
+
+        //start streaming Superlav to staker account balance
+        startStreamLav(amount * 2);
+
         isStaking[msg.sender] = true;
         emit Stake(msg.sender, amount);
     }
 
-    function unstake(uint256 amount) public {
-        require(
-            isStaking[msg.sender] =
-                true &&
-                stakingBalance[msg.sender] >= amount,
-            "Nothing to unstake"
-        );
-        uint256 yieldTransfer = calculateYieldTotal(msg.sender);
-        startTime[msg.sender] = block.timestamp;
-        uint256 balanceTransfer = amount;
-        amount = 0;
-        stakingBalance[msg.sender] -= balanceTransfer;
-        daiToken.transfer(msg.sender, balanceTransfer);
-        lavBalance[msg.sender] += yieldTransfer;
-        if (stakingBalance[msg.sender] == 0) {
-            isStaking[msg.sender] = false;
+    function startStreamLav(uint256 amount) internal view {
+        if (lavBalance[msg.sender] != 0) {
+            // lavBalance[msg.sender] = 0;
+            //start streaming 'amount'
+            console.log("STREAMING..................");
+            console.log(amount);
         }
-        emit Unstake(msg.sender, amount);
+    }
+
+    function unstake() public {
+        isStaking[msg.sender] = false;
+        lavBalance[msg.sender] = 0;
+        // require(
+        //     isStaking[msg.sender] =
+        //         true &&
+        //         stakingBalance[msg.sender] >= amount,
+        //     "Nothing to unstake"
+        // );
+        // uint256 yieldTransfer = calculateYieldTotal(msg.sender);
+        // startTime[msg.sender] = block.timestamp;
+        // uint256 balanceTransfer = amount;
+        // amount = 0;
+        // stakingBalance[msg.sender] -= balanceTransfer;
+        // daiToken.transfer(msg.sender, balanceTransfer);
+        // lavBalance[msg.sender] += yieldTransfer;
+        // if (stakingBalance[msg.sender] == 0) {
+        //     isStaking[msg.sender] = false;
+        // }
+        // emit Unstake(msg.sender, amount);
     }
 
     function withdrawYield() public {
