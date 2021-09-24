@@ -217,7 +217,7 @@ export default function FunctionForm({ contractFunction, functionInfo, provider,
                 const returned = await tx(contractFunction(...args, overrides));
                 result = tryToDisplay(returned);
               }
-
+              
               console.log("SETTING RESULT:", result);
               setReturnValue(result);
               triggerRefresh(true);

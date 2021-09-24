@@ -34,19 +34,22 @@ module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
 
   const items = await deploy('Items',{
     from: deployer,
-    //args:[daiToken.address, lavToken.address],
+    args:[
+      [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20], 
+      [100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100], 
+    ],
     log:true,
   })
 
   const accounts = await deploy('Accounts',{
     from: deployer,
-    //args:[daiToken.address, lavToken.address],
+    args:[items.address],
     log:true,
   })
 
   const game = await deploy('Game',{
     from: deployer,
-    args:[accounts.address, items.address],
+    args:[accounts.address],
     log:true,
   })
 
@@ -57,6 +60,15 @@ module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
   await lav._transferOwnership(stakeManager.address);
 
   //
+
+  const Accounts = await ethers.getContractAt("Accounts", accounts.address);
+  const Items = await ethers.getContractAt("Items", items.address);
+
+
+  await Accounts.setAccountManager(game.address);
+  await Items.setItemManager(accounts.address, accounts.address);
+  await Accounts.transferOwnership(game.address);
+  await Items.transferOwnership(game.address);
 
 
   /*

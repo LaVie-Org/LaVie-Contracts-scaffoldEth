@@ -1,44 +1,42 @@
 pragma solidity >=0.8.0 <0.9.0;
 //SPDX-License-Identifier: MIT
 
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "./Accounts.sol";
-import "./Items.sol";
 
-contract Game is Ownable {
+contract Game {
     Accounts public accounts;
-    Items public items;
 
-    constructor(Accounts _accounts, Items _items){
+    constructor(Accounts _accounts){
         accounts = _accounts;
-        items = _items;
     }
 
-    function newPlayer(address player, uint256 accountType, string memory playerStateURI) public payable {
+    function newPlayer(address player, string memory playerStateURI, uint256 accountType) public {
         //1. take stake
         //2. create account
         //3. assign items
+        //1:15;30
+        require(accounts.players(player) == 0, 'La Vie: Player already exists.');
+        require(msg.sender == player, "La Vie: Cannot create an account for another Address.");
+        require(accountType == 1 || accountType == 2 || accountType == 3, 'La Vie: Wrong account type.');
+        createPlayerAccount(player, playerStateURI, accountType);
     }
 
-    function createPlayerAccount(address player, string memory playerStateURI) internal onlyOwner returns(uint) {
-        return accounts.createAccount(player, playerStateURI);
+    function deletePlayer(address player, uint256 tokenId) public {
+        require(accounts.exists(tokenId), "La Vie: token does not exist");
+        require(msg.sender == accounts.getAccountOwner(tokenId), "La Vie: Cannot delete an unowned account");
+        accounts.deleteAccount(player, tokenId);
     }
 
-    function assignItemsToPlayer(address player, uint256 accountType) internal onlyOwner {
-        if(accountType == 3){
-            //assuming items are pre-minted
-            //initiate w/ 3 basic items and 1 rare
-            //knife, brass knuckles, bat
-            //rare item should be random? Init chainlink random #
-            items.safeBatchTransferFrom(items, player, [1, 5, 9], [1, 1, 1], "");
-        } else if (accountType == 2){
-            //assuming items are pre-minted
-            //initiate w/ 2 basic items
-            //knife, bat
-            items.safeBatchTransferFrom(items, player, [1, 9], [1, 1], "");
-        } else {
-            //skip
-            //basic accounts, tier 1 do not get any items.
-        }
+
+    function createPlayerAccount(address player, string memory playerStateURI, uint256 accountType) internal returns(uint) {
+        return accounts.createAccount(player, playerStateURI, accountType);
     }
+
+    function playerReceivesAnItem(address player, uint256 tokenId, uint256 itemId) public {
+        require(accounts.itemExists(itemId), 'La Vie: item does not exist');
+        require(accounts.exists(tokenId), "La Vie: token does not exist");
+        require(msg.sender == accounts.getAccountOwner(tokenId), "La Vie: Account not owned");
+        accounts.playerReceivesItemFromGame(player, tokenId, itemId);
+    }
+
 }
