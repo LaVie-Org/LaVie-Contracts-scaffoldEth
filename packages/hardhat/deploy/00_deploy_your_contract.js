@@ -1,6 +1,6 @@
 // deploy/00_deploy_your_contract.js
 
-const { ethers } = require("ethers");
+// const { ethers } = require("ethers");
 
 //const { ethers } = require("hardhat");
 
@@ -16,7 +16,7 @@ module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
 
   const lavToken = await deploy("LavToken",{
     from: deployer,
-    // args:
+    // args:,
     log:true,
   })
 
@@ -26,7 +26,7 @@ module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
     log:true,
   })
 
-  await deploy('StakeManager',{
+  const stakeManager = await deploy('StakeManager',{
     from: deployer,
     args:[daiToken.address, lavToken.address],
     log:true,
@@ -52,6 +52,12 @@ module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
 
   /*const Accounts = await ethers.getContractAt("Accounts", accounts.address);
   await Accounts.transferOwnership(game.address);*/
+  // await lavToken._transferOwnership(stakeManager.address);
+  const lav = await ethers.getContract("LavToken", deployer);
+  await lav._transferOwnership(stakeManager.address);
+
+  //
+
 
   /*
     // Getting a previously deployed contract
