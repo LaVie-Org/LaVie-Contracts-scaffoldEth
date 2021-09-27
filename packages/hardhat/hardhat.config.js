@@ -52,7 +52,8 @@ module.exports = {
   networks: {
     hardhat:{
       forking:{
-        url:"https://eth-goerli.alchemyapi.io/v2/APSk3CNTMGaNCq5qm_7ELXauD5qM_1aQ",
+        // url:"https://eth-goerli.alchemyapi.io/v2/APSk3CNTMGaNCq5qm_7ELXauD5qM_1aQ",
+        url: "https://eth-rinkeby.alchemyapi.io/v2/a4-XncK6hR9k65OqgzolCgloBE60nbUE"
       },
     },
     localhost: {
