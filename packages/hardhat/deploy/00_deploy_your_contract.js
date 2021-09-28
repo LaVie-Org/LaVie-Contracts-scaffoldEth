@@ -23,6 +23,15 @@ module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
 //     log: true,
 //   });
 
+  // const sf = new SuperfluidSDK.Framework({
+  //     ethers: ethers.provider,
+  //     tokens: ["fDAI"],
+  // });
+
+  // await sf.initialize();
+
+  // console.log(sf)
+
 
   const rinkebyDAIAddress=   "0x5592ec0cfb4dbc12d3ab100b257153436a1f0fea"
 
