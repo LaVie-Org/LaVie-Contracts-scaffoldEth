@@ -10,6 +10,8 @@ require("hardhat-deploy");
 require("@eth-optimism/hardhat-ovm");
 require("@nomiclabs/hardhat-ethers");
 
+require('dotenv').config();
+
 const { isAddress, getAddress, formatUnits, parseUnits } = utils;
 
 /*
@@ -53,7 +55,7 @@ module.exports = {
     hardhat:{
       forking:{
         // url:"https://eth-goerli.alchemyapi.io/v2/APSk3CNTMGaNCq5qm_7ELXauD5qM_1aQ",
-        url: "https://polygon-mumbai.g.alchemy.com/v2/uAPvyDaIIYs79VBnFdVMpIzD-OlgUlLZ"
+        url: process.env.POLYGON
       },
     },
     localhost: {

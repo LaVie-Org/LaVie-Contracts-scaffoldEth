@@ -12,6 +12,7 @@
     "eslint-plugin-prettier": "^3.4.0"
   },
   "dependencies": {
+    "@balancer-labs/sor": "^2.0.0-beta.0",
     "@eth-optimism/hardhat-ovm": "^0.2.2",
     "@ethersproject/contracts": "^5.4.1",
     "@nomiclabs/hardhat-ethers": "^2.0.2",
@@ -20,8 +21,10 @@
     "@superfluid-finance/js-sdk": "^0.5.4",
     "@tenderly/hardhat-tenderly": "^1.0.10",
     "@truffle/contract": "^4.3.29",
+    "bignumber.js": "^9.0.1",
     "chai": "^4.2.0",
     "chalk": "^4.1.0",
+    "dotenv": "^10.0.0",
     "ethereum-waffle": "^3.1.1",
     "ethers": "^5.4.4",
     "hardhat": "2.6.0",
