@@ -12,6 +12,7 @@ const BigNumber = require('bignumber.js');
 
 const CRPFactoryArtifact = require("./CRPFactory.json");
 const WeightedPoolFactoryABI = require("./WeightedPoolFactory.json")
+const OraclePoolFactoryABI = require("./OraclePoolFactory.json")
 const VaultABI = require("./Vault.json")
 
 module.exports = async ({ getNamedAccounts, deployments, ethers, sor }) => {
@@ -53,9 +54,6 @@ module.exports = async ({ getNamedAccounts, deployments, ethers, sor }) => {
   await dai.mint(25000)
   await lav._transferOwnership(stakeManager.address);
 
-  const token1 = daiToken.address;
-  const token2 = lavToken.address;
-
   const weightBig = 50000000000000000n
 
 
@@ -79,10 +77,13 @@ const SYMBOL = '50DAI-50LaV';
 const swapFeePercentage = 50000000000000000n; // 0.5%
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';  
-console.log("????????????")
 
-const factory = await ethers.getContractAt(WeightedPoolFactoryABI,
-WEIGHTED_POOL_FACTORY);
+// const factory = await ethers.getContractAt(WeightedPoolFactoryABI,
+// WEIGHTED_POOL_FACTORY);
+
+const factory = await ethers.getContractAt(OraclePoolFactoryABI,
+  ORACLE_POOL_FACTORY);
+  const oracleEnabled = false
 
 const vault = await ethers.getContractAt(VaultABI, VAULT);
 
@@ -92,7 +93,7 @@ const vault = await ethers.getContractAt(VaultABI, VAULT);
 // DELEGATE_OWNER grants permission to governance for dynamic fee management
 // Any other address lets that address directly set the fees
 const tx = await factory.create(NAME, SYMBOL, tokens, weights,
-swapFeePercentage, ZERO_ADDRESS);
+swapFeePercentage,oracleEnabled, ZERO_ADDRESS);
 const receipt = await tx.wait();
 
 

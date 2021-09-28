@@ -55,7 +55,7 @@ module.exports = {
     hardhat:{
       forking:{
         // url:"https://eth-goerli.alchemyapi.io/v2/APSk3CNTMGaNCq5qm_7ELXauD5qM_1aQ",
-        url: process.env.POLYGON
+        url: process.env.MUMBAI
       },
     },
     localhost: {
