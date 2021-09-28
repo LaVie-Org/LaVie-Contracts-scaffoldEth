@@ -3,7 +3,7 @@
 const { Interface } = require("@ethersproject/abi");
 const { ethers } = require("ethers");
 const { Web3Provider } = require("@ethersproject/providers");
-const SuperfluidSDK = require("@superfluid-finance/js-sdk");
+// const SuperfluidSDK = require("@superfluid-finance/js-sdk");
 
 
 //const { ethers } = require("hardhat");
@@ -19,7 +19,7 @@ module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
   });
   
   //Goerli network!!
-  const ProxyAddress = "0x2ef6a2073408344F9b9B17d12959E18baA429dd0"
+  // const ProxyAddress = "0x2ef6a2073408344F9b9B17d12959E18baA429dd0"
  
   const lavToken = await deploy("LavToken",{
     from: deployer,
@@ -33,7 +33,16 @@ module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
     log:true,
   })
 
-  // const lav = await ethers.getContract("LavToken", deployer);
+  const stakeManager = await deploy("StakeManager",{
+    from: deployer,
+    args: [daiToken.address, lavToken.address],
+    log:true
+  })
+
+
+
+  const lav = await ethers.getContractAt("LavToken", lavToken.address);
+  await lav._transferOwnership(stakeManager.address);
 
   // const abi = [{"inputs":[{"internalType":"contract ISuperfluid","name":"host","type":"address"},{"internalType":"contract SuperTokenFactoryHelper","name":"helper","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"bytes32","name":"uuid","type":"bytes32"},{"indexed":false,"internalType":"address","name":"codeAddress","type":"address"}],"name":"CodeUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"contract ISuperToken","name":"token","type":"address"}],"name":"CustomSuperTokenCreated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"contract ISuperToken","name":"token","type":"address"}],"name":"SuperTokenCreated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"contract ISuperToken","name":"tokenLogic","type":"address"}],"name":"SuperTokenLogicCreated","type":"event"},{"inputs":[{"internalType":"contract ERC20WithTokenInfo","name":"underlyingToken","type":"address"},{"internalType":"enum ISuperTokenFactory.Upgradability","name":"upgradability","type":"uint8"},{"internalType":"string","name":"name","type":"string"},{"internalType":"string","name":"symbol","type":"string"}],"name":"createERC20Wrapper","outputs":[{"internalType":"contract ISuperToken","name":"superToken","type":"address"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"contract IERC20","name":"underlyingToken","type":"address"},{"internalType":"uint8","name":"underlyingDecimals","type":"uint8"},{"internalType":"enum ISuperTokenFactory.Upgradability","name":"upgradability","type":"uint8"},{"internalType":"string","name":"name","type":"string"},{"internalType":"string","name":"symbol","type":"string"}],"name":"createERC20Wrapper","outputs":[{"internalType":"contract ISuperToken","name":"superToken","type":"address"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"contract ISuperfluid","name":"host","type":"address"}],"name":"createSuperTokenLogic","outputs":[{"internalType":"address","name":"logic","type":"address"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"getCodeAddress","outputs":[{"internalType":"address","name":"codeAddress","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getHost","outputs":[{"internalType":"address","name":"host","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getSuperTokenLogic","outputs":[{"internalType":"contract ISuperToken","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"initialize","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"customSuperTokenProxy","type":"address"}],"name":"initializeCustomSuperToken","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"proxiableUUID","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"pure","type":"function"},{"inputs":[{"internalType":"address","name":"newAddress","type":"address"}],"name":"updateCode","outputs":[],"stateMutability":"nonpayable","type":"function"}]
   
@@ -45,10 +54,10 @@ module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
   // console.log( await factory.estimateGas.createERC20Wrapper(lav.address,0,"Super Token LaVie","LaVx"))
 
   
-  const sf = new SuperfluidSDK.Framework({
-      ethers: ethers.provider
-  });
-  await sf.initialize()
+  // const sf = new SuperfluidSDK.Framework({
+  //     ethers: ethers.provider
+  // });
+  // await sf.initialize()
 
 // const superTokenFactory = await sf.contracts.ISuperTokenFactory.at(
 //   await sf.host.getSuperTokenFactory.call()

@@ -22,7 +22,7 @@ contract StakeManager {
 
     DaiToken public daiToken;
     LavToken public lavToken;
-    ISuperToken public laVxToken;
+    // ISuperToken public laVxToken;
 
     event Stake(address indexed from, uint256 amount);
     event Unstake(address indexed from, uint256 amount);
@@ -31,16 +31,16 @@ contract StakeManager {
     //inject the token addresses
     constructor(
         DaiToken _daiToken,
-        LavToken _lavToken,
-        ISuperToken _laVxToken
+        LavToken _lavToken
+        // ISuperToken _laVxToken
     ) {
         daiToken = _daiToken;
         lavToken = _lavToken;
-        laVxToken = _laVxToken;
+        // laVxToken = _laVxToken;
     }
 
     /// Core function shells
-    function stake(uint256 amount) external payable {
+    function stake(uint256 amount) external {
         require(
             amount > 0 && daiToken.balanceOf(msg.sender) >= amount,
             "Not enough DAI tokens"
@@ -50,14 +50,14 @@ contract StakeManager {
         daiToken.transferFrom(msg.sender, address(this), amount);
         stakingBalance[msg.sender] += amount;
 
-        lavToken.mint(address(this), amount);
+        lavToken.mint(msg.sender, amount);
 
-        lavToken.increaseAllowance(address(lavToken), amount);
+        // lavToken.increaseAllowance(address(lavToken), amount);
 
-        laVxToken.upgrade(amount);
+        // laVxToken.upgrade(amount);
 
         //calculate earned lav
-        lavBalance[msg.sender] += amount;
+        // lavBalance[msg.sender] += amount;
 
         //start streaming Superlav to staker account balance
         startStreamLav(amount * 2);
