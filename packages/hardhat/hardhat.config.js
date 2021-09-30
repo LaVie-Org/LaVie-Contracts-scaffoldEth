@@ -10,6 +10,8 @@ require("hardhat-deploy");
 require("@eth-optimism/hardhat-ovm");
 require("@nomiclabs/hardhat-ethers");
 
+require('dotenv').config();
+
 const { isAddress, getAddress, formatUnits, parseUnits } = utils;
 
 /*
@@ -52,8 +54,7 @@ module.exports = {
   networks: {
     hardhat:{
       forking:{
-        // url:"https://eth-goerli.alchemyapi.io/v2/APSk3CNTMGaNCq5qm_7ELXauD5qM_1aQ",
-        url: "https://eth-rinkeby.alchemyapi.io/v2/a4-XncK6hR9k65OqgzolCgloBE60nbUE"
+        url: process.env.ETHEREUM
       },
     },
     localhost: {
