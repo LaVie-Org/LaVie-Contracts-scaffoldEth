@@ -12,6 +12,7 @@
     "eslint-plugin-prettier": "^3.4.0"
   },
   "dependencies": {
+    "@balancer-labs/balancer-js": "^1.0.1",
     "@balancer-labs/sor": "^2.0.0-beta.0",
     "@eth-optimism/hardhat-ovm": "^0.2.2",
     "@ethersproject/contracts": "^5.4.1",

@@ -6,6 +6,7 @@ const { Web3Provider } = require("@ethersproject/providers");
 const { sort } = require("ramda");
 const { sor } = require("@balancer-labs/sor");
 const BigNumber = require('bignumber.js');
+const { toNormalizedWeights } = require('@balancer-labs/balancer-js')
 // const SuperfluidSDK = require("@superfluid-finance/js-sdk");
 
 //const { ethers } = require("hardhat");
@@ -15,7 +16,7 @@ const WeightedPoolFactoryABI = require("./WeightedPoolFactory.json")
 const OraclePoolFactoryABI = require("./OraclePoolFactory.json")
 const VaultABI = require("./Vault.json")
 
-module.exports = async ({ getNamedAccounts, deployments, ethers, sor }) => {
+module.exports = async ({ getNamedAccounts, deployments, ethers}) => {
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
   await deploy("YourContract", {
@@ -54,7 +55,7 @@ module.exports = async ({ getNamedAccounts, deployments, ethers, sor }) => {
   await dai.mint(25000)
   await lav._transferOwnership(stakeManager.address);
 
-  const weightBig = 50000000000000000n
+  // const weightBig = 50000000000000000n
 
 
   // Addresses are the same on all networks
@@ -70,11 +71,11 @@ module.exports = async ({ getNamedAccounts, deployments, ethers, sor }) => {
 
 const tokens = [daiToken.address, lavToken.address];
 
-const weights = [weightBig,weightBig];
+const weights = toNormalizedWeights([new BigNumber('0.5e18'),new BigNumber('0.5e18')]);
 
 const NAME = 'Two-token Test Pool';
 const SYMBOL = '50DAI-50LaV';
-const swapFeePercentage = 50000000000000000n; // 0.5%
+ const swapFeePercentage = 50000000000000000n; // 0.5%
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';  
 
@@ -92,7 +93,7 @@ const vault = await ethers.getContractAt(VaultABI, VAULT);
 // ZERO_ADDRESS owner means fixed swap fees
 // DELEGATE_OWNER grants permission to governance for dynamic fee management
 // Any other address lets that address directly set the fees
-const tx = await factory.create(NAME, SYMBOL, tokens, weights,
+const tx = await factory.create(NAME, SYMBOL, tokens, weights.toString(),
 swapFeePercentage,oracleEnabled, ZERO_ADDRESS);
 const receipt = await tx.wait();
 
