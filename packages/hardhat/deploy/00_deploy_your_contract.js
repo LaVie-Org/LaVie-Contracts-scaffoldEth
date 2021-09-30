@@ -1,11 +1,44 @@
 // deploy/00_deploy_your_contract.js
 
 const { Interface } = require("@ethersproject/abi");
-const { ethers } = require("ethers");
+// const { ethers } = require("ethers");
+const {ethers} = require("hardhat")
 const { Web3Provider } = require("@ethersproject/providers");
-const SuperfluidSDK = require("@superfluid-finance/js-sdk");
+const { formatEther, parseEther } = require("@ethersproject/units");
+
+const DAIabi = require("../contracts/DAIabi.json")
+
 
 //const { ethers } = require("hardhat");
+
+const VITALIK = "0xB60C61DBb7456f024f9338c739B02Be68e3F545C"
+//choose metamask wallet address
+const TARGET = "0x7b3813a943391465Dd62B648529c337e52FbA79b"
+const DAI = "0x6b175474e89094c44da98b954eedeac495271d0f"
+
+async function impersonate() {
+  await hre.network.provider.request({
+    method: "hardhat_impersonateAccount",
+    params: [VITALIK],
+  });
+
+  const signer = await ethers.getSigner(VITALIK)
+  const signerAddress = await signer.getAddress()
+
+
+  const myDAIContract = await ethers.getContractAt(DAIabi,DAI, signer)
+
+  const DAIBal = await myDAIContract.balanceOf(signerAddress)
+
+  console.log(DAIBal.toString())
+
+  let transferBal = parseFloat(formatEther(DAIBal)) - 0.01
+
+  await myDAIContract.transferFrom(
+    VITALIK,
+    TARGET,parseEther(transferBal.toString())
+  )
+}
 
 module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
   const { deploy } = deployments;
@@ -17,27 +50,11 @@ module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
     log: true,
   });
 
-// await deploy("DaiToken", {
-//     from: deployer,
-//     // args:
-//     log: true,
-//   });
-
-  // const sf = new SuperfluidSDK.Framework({
-  //     ethers: ethers.provider,
-  //     tokens: ["fDAI"],
-  // });
-
-  // await sf.initialize();
-
-  // console.log(sf)
-
-
   const rinkebyDAIAddress=   "0x5592ec0cfb4dbc12d3ab100b257153436a1f0fea"
 
   const stakeManager = await deploy("StakeManager", {
     from: deployer,
-    args: [rinkebyDAIAddress , lavToken.address],
+    args: [DAI , lavToken.address],
     log: true,
   });
 
@@ -90,6 +107,16 @@ module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
   });
   */
 };
+
+
+impersonate()
+.then(() => process.exit(0))
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
+
+
 module.exports.tags = [
   "YourContract",
   "DaiToken",
@@ -99,3 +126,4 @@ module.exports.tags = [
   "Game",
   "IERC20"
 ];
+
