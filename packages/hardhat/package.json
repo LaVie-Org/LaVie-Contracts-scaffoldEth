@@ -16,6 +16,7 @@
     "@balancer-labs/sor": "^2.0.0-beta.0",
     "@eth-optimism/hardhat-ovm": "^0.2.2",
     "@ethersproject/contracts": "^5.4.1",
+    "@ethersproject/units": "^5.4.0",
     "@nomiclabs/hardhat-ethers": "^2.0.2",
     "@nomiclabs/hardhat-waffle": "^2.0.0",
     "@openzeppelin/contracts": "4.3.2",
