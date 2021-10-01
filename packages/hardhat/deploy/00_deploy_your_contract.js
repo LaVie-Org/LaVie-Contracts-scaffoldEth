@@ -2,41 +2,45 @@
 
 const { Interface } = require("@ethersproject/abi");
 // const { ethers } = require("ethers");
-const {ethers} = require("hardhat")
+const { ethers } = require("hardhat");
 const { Web3Provider } = require("@ethersproject/providers");
 const { formatEther, parseEther } = require("@ethersproject/units");
 
-const DAIabi = require("../contracts/DAIabi.json")
-
+const DAIabi = require("../contracts/DAIabi.json");
 
 //const { ethers } = require("hardhat");
 
-const VITALIK = "0xB60C61DBb7456f024f9338c739B02Be68e3F545C"
+const VITALIK = "0xB60C61DBb7456f024f9338c739B02Be68e3F545C";
 //metamask
-const TARGET = "0x4042707E6cCe53e6E902c756d37669Cd297a825B"
-const DAI = "0x6b175474e89094c44da98b954eedeac495271d0f"
-
-
+const TARGET = "0x7b3813a943391465Dd62B648529c337e52FbA79b";
+// const DAI = "0x6b175474e89094c44da98b954eedeac495271d0f"
+const DAI = "0x6b175474e89094c44da98b954eedeac495271d0f";
+let stakeManager;
 
 module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
-
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
-  
+
   const lavToken = await deploy("LavToken", {
     from: deployer,
     // args:
     log: true,
   });
 
-  const rinkebyDAIAddress=   "0x5592ec0cfb4dbc12d3ab100b257153436a1f0fea"
-
-  const stakeManager = await deploy("StakeManager", {
+  await deploy("DaiToken", {
     from: deployer,
-    args: [DAI , lavToken.address],
     log: true,
   });
 
+  // await ethers.getContractAt("DaiToken", DAI);
+
+  const rinkebyDAIAddress = "0x5592ec0cfb4dbc12d3ab100b257153436a1f0fea";
+
+   stakeManager = await deploy("StakeManager", {
+    from: deployer,
+    args: [DAI, lavToken.address],
+    log: true,
+  });
 
   const LavToken = await ethers.getContractAt("LavToken", lavToken.address);
 
@@ -49,7 +53,6 @@ module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
   // const LavxToken = await ethers.getContractAt(lavxABI, "0xCa349327df5590EC52c3b2EeF3d8cE3B307f1D6a")
 
   // console.log((await LavxToken.balanceOf("0x7b3813a943391465Dd62B648529c337e52FbA79b")).toString())
-
 
   /*
     // Getting a previously deployed contract
@@ -86,9 +89,7 @@ module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
    LibraryName: **LibraryAddress**
   });
   */
-
 };
-
 
 async function impersonate() {
   await hre.network.provider.request({
@@ -96,32 +97,24 @@ async function impersonate() {
     params: [VITALIK],
   });
 
-  const signer = await ethers.getSigner(VITALIK)
-  const signerAddress = await signer.getAddress()
+  const signer = await ethers.getSigner(VITALIK);
+  const signerAddress = await signer.getAddress();
 
+  const myDAIContract = await ethers.getContractAt("DaiToken", DAI, signer);
 
-  const myDAIContract = await ethers.getContractAt(DAIabi,DAI, signer)
+  const DAIBal = await myDAIContract.balanceOf(signerAddress);
 
-  const DAIBal = await myDAIContract.balanceOf(signerAddress)
+  console.log("");
+  console.log("DAI balance: " + DAIBal.toString());
 
-  console.log(DAIBal.toString())
-
-  let transferBal = parseFloat(formatEther(DAIBal)) - 0.01
+  let transferBal = parseFloat(formatEther(DAIBal)) - 0.01;
 
   await myDAIContract.transferFrom(
-    VITALIK,
-    TARGET,parseEther(transferBal.toString())
-  )
+    signerAddress,
+    TARGET,
+    parseEther(transferBal.toString())
+  );
 }
-
-
-
-// impersonate()
-// .then(() => process.exit(0))
-//   .catch((error) => {
-//     console.error(error);
-//     process.exit(1);
-//   });
 
 module.exports.tags = [
   "YourContract",
@@ -130,7 +123,7 @@ module.exports.tags = [
   "Items",
   "Accounts",
   "Game",
-  "IERC20"
+  "IERC20",
 ];
 
-impersonate()
+impersonate();
