@@ -4,7 +4,6 @@ pragma solidity ^0.8.4;
 import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "./DaiToken.sol";
 import "./LavToken.sol";
 import "./interfaces/ISuperToken.sol";
 import "./interfaces/DInterestInterface.sol";
@@ -19,7 +18,7 @@ contract StakeManager {
     // userAddress => timeStamp
     mapping(address => uint256) public startTime;
     // userAddress => 88mphID
-    mapping(address => uint64) public idBank;
+    mapping(address => uint64) public AddressToMphID;
 
     mapping(address => uint) public addressToMaturity;
 
@@ -60,7 +59,8 @@ contract StakeManager {
     }
 
     /// Core function shells
-    function stake(uint256 amount) external {
+    function stake(uint256 amount, uint256 timeInDays) external {
+        require(timeInDays > 365, "above maximum days");
         require(
             amount > 0 && daiToken.balanceOf(msg.sender) >= amount,
             "Not enough DAI tokens"
@@ -70,17 +70,19 @@ contract StakeManager {
         // transfer
         daiToken.transferFrom(msg.sender, address(this), amount);
 
-        uint64 maturationTimestamp = uint64(block.timestamp + 30 days);
+        uint64 maturationTimestamp = uint64(block.timestamp + (timeInDays * 1 days));
         require(daiToken.approve(address(pool), amount));
         uint64 depositID = pool.deposit(amount, maturationTimestamp);
-        idBank[msg.sender] = depositID;
+        AddressToMphID[msg.sender] = depositID;
+
+        console.log(depositID);
 
         stakingBalance[msg.sender] += amount;
 
         lavToken.mint(msg.sender, amount);
 
         //start streaming Superlav to staker account balance
-        startStreamLav(amount * 2);
+        startStreamLav(amount);
 
         addressToMaturity[msg.sender] = maturationTimestamp;
         isStaking[msg.sender] = true;
@@ -98,10 +100,12 @@ contract StakeManager {
         require(isStaking[msg.sender] = true, "not currently staking");
         require(block.timestamp >= addressToMaturity[msg.sender]);
 
-        uint64 depositID = idBank[msg.sender];
+        uint64 depositID = AddressToMphID[msg.sender];
 
         uint64 vestID = vesting.getVestID(DInterestPoolAddress,depositID);
         uint256 rewards = vesting.withdraw(vestID);
+
+        console.log(vestID);
 
         Mph.transferFrom(address(this), msg.sender,rewards);
 

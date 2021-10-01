@@ -12,38 +12,17 @@ const DAIabi = require("../contracts/DAIabi.json")
 //const { ethers } = require("hardhat");
 
 const VITALIK = "0xB60C61DBb7456f024f9338c739B02Be68e3F545C"
-//choose metamask wallet address
-const TARGET = "0x7b3813a943391465Dd62B648529c337e52FbA79b"
+//metamask
+const TARGET = "0x4042707E6cCe53e6E902c756d37669Cd297a825B"
 const DAI = "0x6b175474e89094c44da98b954eedeac495271d0f"
 
-async function impersonate() {
-  await hre.network.provider.request({
-    method: "hardhat_impersonateAccount",
-    params: [VITALIK],
-  });
 
-  const signer = await ethers.getSigner(VITALIK)
-  const signerAddress = await signer.getAddress()
-
-
-  const myDAIContract = await ethers.getContractAt(DAIabi,DAI, signer)
-
-  const DAIBal = await myDAIContract.balanceOf(signerAddress)
-
-  console.log(DAIBal.toString())
-
-  let transferBal = parseFloat(formatEther(DAIBal)) - 0.01
-
-  await myDAIContract.transferFrom(
-    VITALIK,
-    TARGET,parseEther(transferBal.toString())
-  )
-}
 
 module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
+
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
-
+  
   const lavToken = await deploy("LavToken", {
     from: deployer,
     // args:
@@ -70,6 +49,7 @@ module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
   // const LavxToken = await ethers.getContractAt(lavxABI, "0xCa349327df5590EC52c3b2EeF3d8cE3B307f1D6a")
 
   // console.log((await LavxToken.balanceOf("0x7b3813a943391465Dd62B648529c337e52FbA79b")).toString())
+
 
   /*
     // Getting a previously deployed contract
@@ -106,16 +86,42 @@ module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
    LibraryName: **LibraryAddress**
   });
   */
+
 };
 
 
-impersonate()
-.then(() => process.exit(0))
-  .catch((error) => {
-    console.error(error);
-    process.exit(1);
+async function impersonate() {
+  await hre.network.provider.request({
+    method: "hardhat_impersonateAccount",
+    params: [VITALIK],
   });
 
+  const signer = await ethers.getSigner(VITALIK)
+  const signerAddress = await signer.getAddress()
+
+
+  const myDAIContract = await ethers.getContractAt(DAIabi,DAI, signer)
+
+  const DAIBal = await myDAIContract.balanceOf(signerAddress)
+
+  console.log(DAIBal.toString())
+
+  let transferBal = parseFloat(formatEther(DAIBal)) - 0.01
+
+  await myDAIContract.transferFrom(
+    VITALIK,
+    TARGET,parseEther(transferBal.toString())
+  )
+}
+
+
+
+// impersonate()
+// .then(() => process.exit(0))
+//   .catch((error) => {
+//     console.error(error);
+//     process.exit(1);
+//   });
 
 module.exports.tags = [
   "YourContract",
@@ -127,3 +133,4 @@ module.exports.tags = [
   "IERC20"
 ];
 
+impersonate()
