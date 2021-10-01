@@ -118,34 +118,4 @@ contract StakeManager {
         isStaking[msg.sender] = false;
         addressToMaturity[msg.sender] = 0;
     }
-
-    // function withdrawYield() public {
-        // uint256 toTransfer = calculateYieldTotal(msg.sender);
-        // require(
-        //     toTransfer > 0 || lavBalance[msg.sender] > 0,
-        //     "Nothing to withdraw"
-        // );
-        // if (lavBalance[msg.sender] != 0) {
-        //     uint256 oldBalance = lavBalance[msg.sender];
-        //     lavBalance[msg.sender] = 0;
-        //     toTransfer += oldBalance;
-        // }
-        // startTime[msg.sender] = block.timestamp;
-        // lavToken.mint(msg.sender, toTransfer);
-        // emit YieldWithdraw(msg.sender, toTransfer);
-    // }
-
-    // function calculateYieldTime(address user) public view returns (uint256) {
-    //     uint256 end = block.timestamp;
-    //     uint256 totalTime = end - startTime[user];
-    //     return totalTime;
-    // }
-
-    // function calculateYieldTotal(address user) public view returns (uint256) {
-    //     uint256 time = calculateYieldTime(user) * 10**18;
-    //     uint256 rate = 86400;
-    //     uint256 timeRate = time / rate;
-    //     uint256 rawYield = (stakingBalance[user] * timeRate) / 10**18;
-    //     return rawYield;
-    // }
 }
