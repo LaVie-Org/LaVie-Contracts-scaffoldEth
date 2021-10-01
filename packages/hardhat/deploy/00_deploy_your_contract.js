@@ -13,10 +13,10 @@ const { formatEther, parseEther } = require("@ethersproject/units");
 
 //const { ethers } = require("hardhat");
 
-const CRPFactoryArtifact = require("./CRPFactory.json");
-const WeightedPoolFactoryABI = require("./WeightedPoolFactory.json");
-const OraclePoolFactoryABI = require("./OraclePoolFactory.json");
-const VaultABI = require("./Vault.json");
+const CRPFactoryArtifact = require("../abis/CRPFactory.json");
+const WeightedPoolFactoryABI = require("../abis/WeightedPoolFactory.json");
+const OraclePoolFactoryABI = require("../abis/OraclePoolFactory.json");
+const VaultABI = require("../abis/Vault.json");
 
 module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
   const { deploy } = deployments;
