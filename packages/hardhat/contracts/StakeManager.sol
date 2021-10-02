@@ -15,12 +15,16 @@ contract StakeManager {
     // userAddress => isStaking boolean
     mapping(address => bool) public isStaking;
     //track the user’s unrealized yield
-    // userAddress => timeStamp
-    mapping(address => uint256) public startTime;
-    // userAddress => 88mphID
-    mapping(address => uint64) public AddressToMphID;
 
-    mapping(address => uint) public addressToMaturity;
+    struct mphStruct {
+        bool isStaking;
+        uint64 maturation;
+        uint64 mphID;
+        uint64 vestID;
+        uint256 stakedAmount;
+    }
+
+    mapping(address => mphStruct) private addressToMph;
 
     string public name = "StakeManager";
 
@@ -33,11 +37,12 @@ contract StakeManager {
 
     address private constant IVesting02Address =
         0xab5bAA840b4C9321aa66144ffB2693E2db1166C7;
-        address private constant MphAddress = 0x59EE65726f0b886Ec924271B51A3c1e78F52d1FB;
+    address private constant MphAddress =
+        0x59EE65726f0b886Ec924271B51A3c1e78F52d1FB;
 
     // ISuperToken public laVxToken;
 
-    event Stake(address indexed from, uint256 amount);
+    event Stake(mphStruct);
     event Unstake(address indexed from, uint256 amount);
     event YieldWithdraw(address indexed to, uint256 amount);
 
@@ -53,40 +58,40 @@ contract StakeManager {
         daiToken = _daiToken;
         lavToken = _lavToken;
         // laVxToken = _laVxToken;
-         pool = DInterestInterface(DInterestPoolAddress);
-         vesting = IVesting02(IVesting02Address);
-         Mph = IERC20(0x59EE65726f0b886Ec924271B51A3c1e78F52d1FB);
+        pool = DInterestInterface(DInterestPoolAddress);
+        vesting = IVesting02(IVesting02Address);
+        Mph = IERC20(0x59EE65726f0b886Ec924271B51A3c1e78F52d1FB);
     }
 
     /// Core function shells
     function stake(uint256 amount, uint256 timeInDays) external {
-        require(timeInDays > 365, "above maximum days");
+        require(timeInDays <= 365, "above maximum days");
         require(
             amount > 0 && daiToken.balanceOf(msg.sender) >= amount,
             "Not enough DAI tokens"
         );
-        require(!isStaking[msg.sender], "already staking");
+        require(!(addressToMph[msg.sender].isStaking), "already staking");
 
         // transfer
         daiToken.transferFrom(msg.sender, address(this), amount);
 
-        uint64 maturationTimestamp = uint64(block.timestamp + (timeInDays * 1 days));
+        uint64 maturationTimestamp = uint64(
+            block.timestamp + (timeInDays * 1 days)
+        );
         require(daiToken.approve(address(pool), amount));
         uint64 depositID = pool.deposit(amount, maturationTimestamp);
-        AddressToMphID[msg.sender] = depositID;
 
-        console.log(depositID);
+        addressToMph[msg.sender].isStaking = true;
+        addressToMph[msg.sender].maturation = maturationTimestamp;
+        addressToMph[msg.sender].mphID = depositID;
+        addressToMph[msg.sender].stakedAmount = amount;
 
-        stakingBalance[msg.sender] += amount;
-
-        lavToken.mint(msg.sender, amount);
+        // lavToken.mint(msg.sender, amount);
 
         //start streaming Superlav to staker account balance
         startStreamLav(amount);
 
-        addressToMaturity[msg.sender] = maturationTimestamp;
-        isStaking[msg.sender] = true;
-        emit Stake(msg.sender, amount);
+        emit Stake(addressToMph[msg.sender]);
     }
 
     function startStreamLav(uint256 amount) internal view {
@@ -97,17 +102,20 @@ contract StakeManager {
     }
 
     function unstake() public {
-        require(isStaking[msg.sender] = true, "not currently staking");
-        require(block.timestamp >= addressToMaturity[msg.sender]);
+        require(addressToMph[msg.sender].isStaking, "not currently staking");
+        require(
+            block.timestamp >= addressToMph[msg.sender].maturation,
+            "too early to unstake"
+        );
 
-        uint64 depositID = AddressToMphID[msg.sender];
+        uint64 depositID = addressToMph[msg.sender].mphID;
 
-        uint64 vestID = vesting.getVestID(DInterestPoolAddress,depositID);
+        uint64 vestID = addressToMph[msg.sender].vestID;
         uint256 rewards = vesting.withdraw(vestID);
 
-        console.log(vestID);
+        console.log(rewards);
 
-        Mph.transferFrom(address(this), msg.sender,rewards);
+        Mph.transferFrom(address(this), msg.sender, rewards);
 
         uint256 virtualTokenAmount = type(uint256).max; // withdraw all funds
         bool early = false; // withdrawing after maturation​
@@ -115,7 +123,12 @@ contract StakeManager {
 
         daiToken.transferFrom(address(this), msg.sender, amount);
 
-        isStaking[msg.sender] = false;
-        addressToMaturity[msg.sender] = 0;
+        addressToMph[msg.sender].isStaking = false;
+        addressToMph[msg.sender].maturation = 0;
+    }
+
+    function setVestID(address account, uint64 vestID) external {
+        require(addressToMph[account].vestID == 0, "vestID already set");
+        addressToMph[account].vestID = vestID;
     }
 }
