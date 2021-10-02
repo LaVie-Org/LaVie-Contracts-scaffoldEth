@@ -107,6 +107,8 @@ contract StakeManager {
             block.timestamp >= addressToMph[msg.sender].maturation,
             "too early to unstake"
         );
+        require(addressToMph[msg.sender].vestID != 0, "vestID not set");
+        require(addressToMph[msg.sender].mphID != 0, "depositID not set");
 
         uint64 depositID = addressToMph[msg.sender].mphID;
 
@@ -125,10 +127,16 @@ contract StakeManager {
 
         addressToMph[msg.sender].isStaking = false;
         addressToMph[msg.sender].maturation = 0;
+        addressToMph[msg.sender].mphID = 0;
+        addressToMph[msg.sender].vestID = 0;
     }
 
     function setVestID(address account, uint64 vestID) external {
-        require(addressToMph[account].vestID == 0, "vestID already set");
+        require(addressToMph[account].vestID == 0, "vestID already set!");
+        require(
+            addressToMph[account].mphID != 0,
+            "No deposit for this account!"
+        );
         addressToMph[account].vestID = vestID;
     }
 }
