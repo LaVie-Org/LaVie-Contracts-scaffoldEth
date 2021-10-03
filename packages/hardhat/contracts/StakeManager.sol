@@ -3,108 +3,143 @@ pragma solidity ^0.8.4;
 
 import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "./DaiToken.sol";
-import "./LavToken.sol";
+import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "./interfaces/ISuperToken.sol";
+import "./interfaces/DInterestInterface.sol";
+import "./interfaces/IVesting02.sol";
+import "./Accounts.sol";
 
-contract StakeManager {
+contract StakeManager is Ownable {
     // userAddress => stakingBalance
     mapping(address => uint256) public stakingBalance;
     // userAddress => isStaking boolean
     mapping(address => bool) public isStaking;
     //track the user’s unrealized yield
-    // userAddress => timeStamp
-    mapping(address => uint256) public startTime;
-    // userAddress => lavBalance
-    mapping(address => uint256) public lavBalance;
+
+    struct mphStruct {
+        address owner;
+        bool isStaking;
+        uint64 maturation;
+        uint64 mphID;
+        uint64 vestID;
+        uint256 stakedAmount;
+    }
+
+    mapping(address => mphStruct) private addressToMph;
 
     string public name = "StakeManager";
 
-    DaiToken public daiToken;
-    LavToken public lavToken;
+    string public laVieImage =
+        "https://siasky.net/BABQrpPo_hBwLBqVZP9LEc44f96zzi1KVXsW9GIqS2MmkQ";
 
-    event Stake(address indexed from, uint256 amount);
-    event Unstake(address indexed from, uint256 amount);
-    event YieldWithdraw(address indexed to, uint256 amount);
+    ERC20 public daiToken;
+    // LavToken public lavToken;
+
+    //Rinkeby addresses
+    address private constant DInterestPoolAddress =
+        0xB4Ffd2868E8aDa5293BBC1Bceb467AB3e53760Ac;
+
+    address private constant IVesting02Address =
+        0xab5bAA840b4C9321aa66144ffB2693E2db1166C7;
+    address private constant MphAddress =
+        0x59EE65726f0b886Ec924271B51A3c1e78F52d1FB;
+
+    // ISuperToken public laVxToken;
+
+    event Stake(mphStruct nft);
+    event Unstake(address to, uint256 amount);
+
+    DInterestInterface pool;
+    IVesting02 vesting;
+    IERC20 Mph;
 
     //inject the token addresses
-    constructor(DaiToken _daiToken, LavToken _lavToken) {
+    constructor(ERC20 _daiToken) {
         daiToken = _daiToken;
-        lavToken = _lavToken;
+        // lavToken = _lavToken;
+        // laVxToken = _laVxToken;
+        pool = DInterestInterface(DInterestPoolAddress);
+        vesting = IVesting02(IVesting02Address);
+        Mph = IERC20(0x59EE65726f0b886Ec924271B51A3c1e78F52d1FB);
     }
 
     /// Core function shells
-    function stake(uint256 amount) public {
-
+    function stake(
+        address player,
+        uint256 amount,
+        uint256 timeInDays
+    ) external onlyOwner {
+        require(timeInDays <= 365, "above maximum days");
         require(
-            amount > 0 && daiToken.balanceOf(msg.sender) >= amount,
-            "You cannot stake zero tokens"
+            amount > 0 && daiToken.balanceOf(player) >= amount,
+            "Not enough DAI tokens"
         );
-        //if already staking, add unrealised yield to lavBalance
-        if (isStaking[msg.sender] == true) {
-            uint256 toTransfer = calculateYieldTotal(msg.sender);
-            lavBalance[msg.sender] += toTransfer;
-        }
-        //transfer
-        // daiToken.increaseAllowance(address(this), amount);
-        // daiToken.approve(address(this), amount);
-        daiToken.transferFrom(msg.sender, address(this), amount);
-        stakingBalance[msg.sender] += amount;
-        //reset starttime
-        startTime[msg.sender] = block.timestamp;
-        isStaking[msg.sender] = true;
-        emit Stake(msg.sender, amount);
-    }
+        require(!(addressToMph[player].isStaking), "already staking");
 
-    function unstake(uint256 amount) public {
-        require(
-            isStaking[msg.sender] =
-                true &&
-                stakingBalance[msg.sender] >= amount,
-            "Nothing to unstake"
+        // transfer
+        daiToken.transferFrom(player, payable(address(this)), amount);
+
+        uint64 maturationTimestamp = uint64(
+            block.timestamp + (timeInDays * 1 days)
         );
-        uint256 yieldTransfer = calculateYieldTotal(msg.sender);
-        startTime[msg.sender] = block.timestamp;
-        uint256 balanceTransfer = amount;
-        amount = 0;
-        stakingBalance[msg.sender] -= balanceTransfer;
-        daiToken.transfer(msg.sender, balanceTransfer);
-        lavBalance[msg.sender] += yieldTransfer;
-        if (stakingBalance[msg.sender] == 0) {
-            isStaking[msg.sender] = false;
-        }
-        emit Unstake(msg.sender, amount);
-    }
-
-    function withdrawYield() public {
-        uint256 toTransfer = calculateYieldTotal(msg.sender);
-
-        require(
-            toTransfer > 0 || lavBalance[msg.sender] > 0,
-            "Nothing to withdraw"
+        require(daiToken.approve(address(pool), amount));
+        (uint64 depositID, ) = pool.deposit(
+            amount,
+            maturationTimestamp,
+            0,
+            laVieImage
         );
 
-        if (lavBalance[msg.sender] != 0) {
-            uint256 oldBalance = lavBalance[msg.sender];
-            lavBalance[msg.sender] = 0;
-            toTransfer += oldBalance;
-        }
+        addressToMph[player].owner = player;
+        addressToMph[player].isStaking = true;
+        addressToMph[player].maturation = maturationTimestamp;
+        addressToMph[player].mphID = depositID;
+        addressToMph[player].stakedAmount = amount;
 
-        startTime[msg.sender] = block.timestamp;
-        lavToken.mint(msg.sender, toTransfer);
-        emit YieldWithdraw(msg.sender, toTransfer);
+        emit Stake(addressToMph[msg.sender]);
     }
 
-    function calculateYieldTime(address user) public view returns (uint256) {
-        uint256 end = block.timestamp;
-        uint256 totalTime = end - startTime[user];
-        return totalTime;
+    function unstake(address player) external onlyOwner {
+        require(addressToMph[player].isStaking, "not currently staking");
+        require(
+            block.timestamp >= addressToMph[player].maturation,
+            "too early to unstake"
+        );
+        require(addressToMph[player].vestID != 0, "vestID not set");
+        require(addressToMph[player].mphID != 0, "depositID not set");
+
+        uint64 depositID = addressToMph[player].mphID;
+
+        uint64 vestID = addressToMph[player].vestID;
+        uint256 rewards = vesting.withdraw(vestID);
+
+        console.log(rewards);
+
+        Mph.transferFrom(address(this), payable(player), rewards);
+
+        uint256 virtualTokenAmount = type(uint256).max; // withdraw all funds
+        bool early = false; // withdrawing after maturation​
+        uint256 amount = pool.withdraw(depositID, virtualTokenAmount, early);
+
+        daiToken.transferFrom(address(this), payable(player), amount);
+
+        addressToMph[player].owner = address(0);
+        addressToMph[player].isStaking = false;
+        addressToMph[player].maturation = 0;
+        addressToMph[player].mphID = 0;
+        addressToMph[player].vestID = 0;
+
+        emit Unstake(player, amount);
     }
 
-    function calculateYieldTotal(address user) public view returns (uint256) {
-        uint256 time = calculateYieldTime(user) * 10**18;
-        uint256 rate = 86400;
-        uint256 timeRate = time / rate;
-        uint256 rawYield = (stakingBalance[user] * timeRate) / 10**18;
-        return rawYield;
+    function setVestID(address account, uint64 vestID) external onlyOwner{
+        require(addressToMph[account].owner == account,"You dont own this stake!");
+        require(addressToMph[account].vestID == 0, "vestID already set!");
+        require(
+            addressToMph[account].mphID != 0,
+            "No deposit for this account!"
+        );
+        addressToMph[account].vestID = vestID;
     }
 }

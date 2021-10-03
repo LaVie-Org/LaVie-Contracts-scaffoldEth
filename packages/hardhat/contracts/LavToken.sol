@@ -4,9 +4,12 @@ pragma solidity >=0.8.0 <0.9.0;
 import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "./StakeManager.sol";
 
 contract LavToken is ERC20, Ownable {
-    constructor() ERC20("LavToken", "LaV") {}
+
+    constructor() ERC20("LavToken", "LaV") {
+    }
 
     function mint(address to, uint256 amount) public onlyOwner {
         _mint(to, amount);

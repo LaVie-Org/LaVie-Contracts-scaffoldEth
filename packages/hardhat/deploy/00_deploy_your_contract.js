@@ -1,57 +1,95 @@
 // deploy/00_deploy_your_contract.js
 
+
+const { Interface } = require("@ethersproject/abi");
 // const { ethers } = require("ethers");
+const { ethers } = require("hardhat");
+const { Web3Provider } = require("@ethersproject/providers");
+const { formatEther, parseEther } = require("@ethersproject/units");
+
+const DAIabi = require("../contracts/externalAbis/DAIabi.json");
+
 
 //const { ethers } = require("hardhat");
+
+const VITALIK = "0xB60C61DBb7456f024f9338c739B02Be68e3F545C";
+//metamask
+const TARGET = "0x7b3813a943391465Dd62B648529c337e52FbA79b";
+// const DAI = "0x6b175474e89094c44da98b954eedeac495271d0f"
+const DAI_ADDRESS = "0x001b3b4d0f3714ca98ba10f6042daebf0b1b7b6f";
+let stakeManager;
 
 module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
-  await deploy("YourContract", {
-    // Learn more about args here: https://www.npmjs.com/package/hardhat-deploy#deploymentsdeploy
+
+  const items = await deploy("Items", {
     from: deployer,
-    //args: [ "Hello", ethers.utils.parseEther("1.5") ],
+    args: [
+      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
+      [
+        100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
+        100, 100, 100, 100, 100, 100,
+      ],
+    ],
     log: true,
   });
 
-  const lavToken = await deploy("LavToken",{
+  const accounts = await deploy("Accounts", {
     from: deployer,
-    // args:,
+    args: [items.address],
+    log: true,
+  });
+
+
+    
+  await deploy("DaiToken", {
+    from: deployer,
+    log: true,
+  });
+
+
+  // await ethers.getContractAt("DaiToken", DAI);
+
+  // const rinkebyDAIAddress = "0x5592ec0cfb4dbc12d3ab100b257153436a1f0fea";
+
+  stakeManager = await deploy("StakeManager", {
+    from: deployer,
+    args: [DAI_ADDRESS],
+    log: true,
+  });
+
+  const game = await deploy("Game", {
+    from: deployer,
+    args: [accounts.address, stakeManager.address],
+    log: true,
+  });
+
+  await deploy("TheLaVieBoard", {
+    from:deployer,
     log:true,
   })
 
-  const daiToken = await deploy("DaiToken",{
+  const Accounts = await ethers.getContractAt("Accounts", accounts.address);
+  const Items = await ethers.getContractAt("Items", items.address);
+  const StakeManager = await ethers.getContractAt("StakeManager", stakeManager.address)
+
+  await Accounts.setAccountManager(game.address);
+  await Items.setItemManager(accounts.address, accounts.address);
+  await Accounts.transferOwnership(game.address);
+  await StakeManager.transferOwnership(game.address)
+  await Items.transferOwnership(game.address);
+
+  const lavToken = await deploy("LavToken", {
     from: deployer,
     // args:
-    log:true,
-  })
+    log: true,
+  });
 
-  const stakeManager = await deploy('StakeManager',{
-    from: deployer,
-    args:[daiToken.address, lavToken.address],
-    log:true,
-  })
 
-  const items = await deploy('Items',{
-    from: deployer,
-    args:[
-      [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20], 
-      [100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100], 
-    ],
-    log:true,
-  })
+  // const LavToken = await ethers.getContractAt("LavToken", lavToken.address);
 
-  const accounts = await deploy('Accounts',{
-    from: deployer,
-    args:[items.address],
-    log:true,
-  })
-
-  const game = await deploy('Game',{
-    from: deployer,
-    args:[accounts.address],
-    log:true,
-  })
+  // await LavToken._transferOwnership(stakeManager.address);
 
   // await lavToken._transferOwnership(stakeManager.address);
   const lav = await ethers.getContract("LavToken", deployer);
@@ -68,6 +106,11 @@ module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
   await Accounts.transferOwnership(game.address);
   await Items.transferOwnership(game.address);
 
+
+  //Goerli
+  // const LavxToken = await ethers.getContractAt(lavxABI, "0xCa349327df5590EC52c3b2EeF3d8cE3B307f1D6a")
+
+  // console.log((await LavxToken.balanceOf("0x7b3813a943391465Dd62B648529c337e52FbA79b")).toString())
 
   /*
     // Getting a previously deployed contract
@@ -105,4 +148,41 @@ module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
   });
   */
 };
-module.exports.tags = ["YourContract","DaiToken","LavToken", "Items", "Accounts", "Game"];
+
+async function impersonate() {
+  await hre.network.provider.request({
+    method: "hardhat_impersonateAccount",
+    params: [VITALIK],
+  });
+
+  const signer = await ethers.getSigner(VITALIK);
+  const signerAddress = await signer.getAddress();
+
+  const myDAIContract = await ethers.getContractAt("DaiToken", DAI, signer);
+
+  const DAIBal = await myDAIContract.balanceOf(signerAddress);
+
+  console.log("");
+  console.log("DAI balance: " + DAIBal.toString());
+
+  let transferBal = parseFloat(formatEther(DAIBal)) - 0.01;
+
+  await myDAIContract.transferFrom(
+    signerAddress,
+    TARGET,
+    parseEther(transferBal.toString())
+  );
+}
+
+module.exports.tags = [
+  "TheLaVieBoard",
+  "YourContract",
+  "DaiToken",
+  "LavToken",
+  "Items",
+  "Accounts",
+  "Game",
+  "IERC20",
+];
+
+// impersonate();
