@@ -2,6 +2,7 @@ pragma solidity >=0.8.0 <0.9.0;
 //SPDX-License-Identifier: MIT
 
 import "./Accounts.sol";
+
 import "./StakeManager.sol";
 
 contract Game {
@@ -18,6 +19,7 @@ contract Game {
         string memory playerStateURI,
         uint8 accountType
     ) external payable{
+
         //1. take stake
         //2. create account
         //3. assign items
@@ -87,5 +89,6 @@ contract Game {
 
     function setVestID(uint64 vestID) external{
         stakeManager.setVestID(msg.sender, vestID);
+
     }
 }

@@ -1,5 +1,6 @@
 // deploy/00_deploy_your_contract.js
 
+
 const { Interface } = require("@ethersproject/abi");
 // const { ethers } = require("ethers");
 const { ethers } = require("hardhat");
@@ -7,6 +8,7 @@ const { Web3Provider } = require("@ethersproject/providers");
 const { formatEther, parseEther } = require("@ethersproject/units");
 
 const DAIabi = require("../contracts/externalAbis/DAIabi.json");
+
 
 //const { ethers } = require("hardhat");
 
@@ -39,11 +41,13 @@ module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
     log: true,
   });
 
+
     
   await deploy("DaiToken", {
     from: deployer,
     log: true,
   });
+
 
   // await ethers.getContractAt("DaiToken", DAI);
 
@@ -87,8 +91,21 @@ module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
 
   // await LavToken._transferOwnership(stakeManager.address);
 
-  /*const Accounts = await ethers.getContractAt("Accounts", accounts.address);
-  await Accounts.transferOwnership(game.address);*/
+  // await lavToken._transferOwnership(stakeManager.address);
+  const lav = await ethers.getContract("LavToken", deployer);
+  await lav._transferOwnership(stakeManager.address);
+
+  //
+
+  const Accounts = await ethers.getContractAt("Accounts", accounts.address);
+  const Items = await ethers.getContractAt("Items", items.address);
+
+
+  await Accounts.setAccountManager(game.address);
+  await Items.setItemManager(accounts.address, accounts.address);
+  await Accounts.transferOwnership(game.address);
+  await Items.transferOwnership(game.address);
+
 
   //Goerli
   // const LavxToken = await ethers.getContractAt(lavxABI, "0xCa349327df5590EC52c3b2EeF3d8cE3B307f1D6a")

@@ -60,7 +60,9 @@ contract Accounts is ERC721, ERC721URIStorage, ContextMixin, Ownable {
     event AccountDeleted(address player);
     event ItemReceived(address player, uint256 tokenId, uint256 itemId);
 
+
     constructor(Items _items) ERC721("LaVAccounts", "LaVAccounts") {
+
         itemsContract = _items;
         ACCOUNT_MANAGER = owner();
     }
@@ -83,6 +85,7 @@ contract Accounts is ERC721, ERC721URIStorage, ContextMixin, Ownable {
         string memory playerTokenURI,
         uint256 accountType
     ) external onlyOwner returns (uint256) {
+
         _tokenIds.increment();
         uint256 newItemId = _tokenIds.current();
         _safeMint(player, newItemId);
@@ -97,10 +100,12 @@ contract Accounts is ERC721, ERC721URIStorage, ContextMixin, Ownable {
     }
 
     function deleteAccount(address player, uint256 tokenId) external onlyOwner {
+
         require(
             _isApprovedOrOwner(_msgSender(), tokenId),
             "LaVie: can't burn account not owned"
         );
+
         _burn(tokenId);
         deleteAccountItems(player, tokenId);
         delete account[tokenId][player];
@@ -110,24 +115,28 @@ contract Accounts is ERC721, ERC721URIStorage, ContextMixin, Ownable {
         emit AccountDeleted(player);
     }
 
+
     function tokenURI(uint256 tokenId)
         public
         view
         override(ERC721, ERC721URIStorage)
         returns (string memory)
     {
+
         return super.tokenURI(tokenId);
     }
 
-    function getAccountOwner(uint256 tokenId) public view returns (address) {
+    function getAccountOwner(uint256 tokenId) public view returns(address) {
         return _accountOwner.get(tokenId);
     }
+
 
     function transferFrom(
         address from,
         address to,
         uint256 tokenId
     ) public override {
+
         super.transferFrom(from, to, tokenId);
         changeAccountOwnership(from, tokenId, to);
         _accountOwner.set(tokenId, to);
@@ -137,6 +146,7 @@ contract Accounts is ERC721, ERC721URIStorage, ContextMixin, Ownable {
         internal
         override(ERC721, ERC721URIStorage)
     {
+
         super._burn(tokenId);
     }
 
@@ -144,12 +154,14 @@ contract Accounts is ERC721, ERC721URIStorage, ContextMixin, Ownable {
         return super._exists(tokenId);
     }
 
+
     function initAccountItems(
         address player,
         uint256 accountId,
         uint256 accountType
     ) private onlyOwner {
         if (accountType == 3) {
+
             //assuming items are pre-minted
             //initiate w/ 3 basic items and 1 rare
             //knife, brass knuckles, bat (1,5,9)
@@ -164,6 +176,7 @@ contract Accounts is ERC721, ERC721URIStorage, ContextMixin, Ownable {
             amounts[2] = 1;
             transferItemsFromGameToAccount(player, accountId, ids, amounts);
         } else if (accountType == 2) {
+
             //assuming items are pre-minted
             //initiate w/ 2 basic items
             //knife, bat
@@ -194,11 +207,13 @@ contract Accounts is ERC721, ERC721URIStorage, ContextMixin, Ownable {
             amounts,
             "0x0"
         );
+
         account[accountId][player].items = ids;
         for (uint256 i = 0; i < ids.length; ++i) {
             account[accountId][player].inventory[ids[i]].amount = amounts[i];
         }
     }
+
 
     function changeAccountOwnership(
         address oldPlayer,
@@ -227,6 +242,7 @@ contract Accounts is ERC721, ERC721URIStorage, ContextMixin, Ownable {
             account[accountId][newPlayer].inventory[ids[i]].amount = account[
                 accountId
             ][oldPlayer].inventory[ids[i]].amount;
+
         }
 
         delete account[accountId][oldPlayer];
@@ -235,6 +251,7 @@ contract Accounts is ERC721, ERC721URIStorage, ContextMixin, Ownable {
         players[oldPlayer] = 0;
         emit AccountSwapped(oldPlayer, newPlayer);
     }
+
 
     function deleteAccountItems(address player, uint256 accountId)
         private
@@ -269,9 +286,11 @@ contract Accounts is ERC721, ERC721URIStorage, ContextMixin, Ownable {
         uint256[] memory itemIds
     ) public onlyOwner {
         for (uint256 i = 0; i < itemIds.length; i++) {
+
             playerReceivesItemFromGame(player, accountId, itemIds[i]);
         }
     }
+
 
     function playerReceivesItemFromMarket(
         address fromPlayer,
@@ -283,6 +302,7 @@ contract Accounts is ERC721, ERC721URIStorage, ContextMixin, Ownable {
             _msgSender() == address(itemsContract),
             "La Vie: Function callable only on trade."
         );
+
         uint256 fromAccountId = players[fromPlayer];
         uint256 toAccountId = players[toPlayer];
         addItemToAccount(toPlayer, toAccountId, itemId, amount);
@@ -345,11 +365,13 @@ contract Accounts is ERC721, ERC721URIStorage, ContextMixin, Ownable {
         account[accountId][player].inventory[itemId].amount -= amount;
     }
 
+
     function getItemAmounts(address player, uint256 accountId)
         private
         view
         returns (uint256[] memory)
     {
+
         uint256[] memory ids = account[accountId][player].items;
         uint256[] memory amounts = new uint256[](ids.length);
         for (uint256 i = 0; i < ids.length; ++i) {
@@ -357,6 +379,7 @@ contract Accounts is ERC721, ERC721URIStorage, ContextMixin, Ownable {
         }
         return amounts;
     }
+
 
     function itemExists(uint256 itemId) public view returns (bool) {
         return itemsContract.exists(itemId);
@@ -373,13 +396,16 @@ contract Accounts is ERC721, ERC721URIStorage, ContextMixin, Ownable {
             _operator == address(MARKETPLACE_OPERATOR) ||
             _operator == address(ACCOUNT_MANAGER)
         ) {
+
             return true;
         }
         // otherwise, use the default ERC721.isApprovedForAll()
         return super.isApprovedForAll(_owner, _operator);
     }
 
+
     function _msgSender() internal view override returns (address sender) {
+
         return ContextMixin.msgSender();
     }
 }

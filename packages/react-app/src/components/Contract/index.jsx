@@ -82,9 +82,9 @@ export default function Contract({
   const [refreshRequired, triggerRefresh] = useState(false);
   const contractDisplay = displayedContractFunctions.map(contractFuncInfo => {
 
-    const contractFunc = contractFuncInfo.stateMutability === "view" || contractFuncInfo.stateMutability === "pure"
+    const contractFunc = /*contractFuncInfo.stateMutability === "view" || contractFuncInfo.stateMutability === "pure"
       ? contract[contractFuncInfo.name]
-      : contract.connect(signer)[contractFuncInfo.name];
+      : */ contract.connect(signer)[contractFuncInfo.name];
 
     if (typeof contractFunc === "function") {
 
@@ -134,6 +134,7 @@ export default function Contract({
                 blockExplorer={blockExplorer}
               />
               {account}
+
             </div>
           </div>
         }
