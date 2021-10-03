@@ -54,7 +54,7 @@ module.exports = {
   networks: {
     hardhat:{
       forking:{
-        url: process.env.ETHEREUM
+        url: process.env.MUMBAI
       },
     },
     localhost: {
