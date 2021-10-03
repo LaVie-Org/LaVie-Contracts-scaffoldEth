@@ -66,7 +66,7 @@ contract Game {
         address player,
         uint256 tokenId,
         uint256 itemId
-    ) public {
+    ) external {
         require(accounts.itemExists(itemId), "La Vie: item does not exist");
         require(accounts.exists(tokenId), "La Vie: token does not exist");
         require(
