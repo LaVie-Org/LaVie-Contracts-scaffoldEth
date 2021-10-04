@@ -15,8 +15,14 @@ const DAIabi = require("../contracts/externalAbis/DAIabi.json");
 const VITALIK = "0xB60C61DBb7456f024f9338c739B02Be68e3F545C";
 //metamask
 const TARGET = "0x7b3813a943391465Dd62B648529c337e52FbA79b";
-// const DAI = "0x6b175474e89094c44da98b954eedeac495271d0f"
-const DAI_ADDRESS = "0x001b3b4d0f3714ca98ba10f6042daebf0b1b7b6f";
+
+//ETHEREUM DAI
+const DAI_ADDRESS = "0x6b175474e89094c44da98b954eedeac495271d0f"
+//MUMBAI DAI
+// const DAI_ADDRESS = "0x001b3b4d0f3714ca98ba10f6042daebf0b1b7b6f";
+
+
+
 let stakeManager;
 
 module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
@@ -45,6 +51,7 @@ module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
     
   await deploy("DaiToken", {
     from: deployer,
+    args:[DAI_ADDRESS],
     log: true,
   });
 
@@ -92,19 +99,19 @@ module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
   // await LavToken._transferOwnership(stakeManager.address);
 
   // await lavToken._transferOwnership(stakeManager.address);
-  const lav = await ethers.getContract("LavToken", deployer);
-  await lav._transferOwnership(stakeManager.address);
+  // const lav = await ethers.getContract("LavToken", deployer);
+  // await lav._transferOwnership(stakeManager.address);
 
   //
 
-  const Accounts = await ethers.getContractAt("Accounts", accounts.address);
-  const Items = await ethers.getContractAt("Items", items.address);
+  // const Accounts = await ethers.getContractAt("Accounts", accounts.address);
+  // const Items = await ethers.getContractAt("Items", items.address);
 
 
-  await Accounts.setAccountManager(game.address);
-  await Items.setItemManager(accounts.address, accounts.address);
-  await Accounts.transferOwnership(game.address);
-  await Items.transferOwnership(game.address);
+  // await Accounts.setAccountManager(game.address);
+  // await Items.setItemManager(accounts.address, accounts.address);
+  // await Accounts.transferOwnership(game.address);
+  // await Items.transferOwnership(game.address);
 
 
   //Goerli
@@ -158,7 +165,7 @@ async function impersonate() {
   const signer = await ethers.getSigner(VITALIK);
   const signerAddress = await signer.getAddress();
 
-  const myDAIContract = await ethers.getContractAt("DaiToken", DAI, signer);
+  const myDAIContract = await ethers.getContractAt("DaiToken", DAI_ADDRESS, signer);
 
   const DAIBal = await myDAIContract.balanceOf(signerAddress);
 
@@ -185,4 +192,4 @@ module.exports.tags = [
   "IERC20",
 ];
 
-// impersonate();
+impersonate();

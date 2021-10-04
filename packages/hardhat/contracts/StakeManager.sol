@@ -61,7 +61,7 @@ contract StakeManager is Ownable {
         // laVxToken = _laVxToken;
         pool = DInterestInterface(DInterestPoolAddress);
         vesting = IVesting02(IVesting02Address);
-        Mph = IERC20(0x59EE65726f0b886Ec924271B51A3c1e78F52d1FB);
+        Mph = IERC20(MphAddress);
     }
 
     /// Core function shells
