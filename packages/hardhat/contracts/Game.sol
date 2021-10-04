@@ -78,6 +78,7 @@ contract Game {
         accounts.playerReceivesItemFromGame(player, tokenId, itemId);
     }
 
+<<<<<<< HEAD
     function unstake(address player, uint256 tokenId) external {
         require(accounts.exists(tokenId), "La Vie: token does not exist");
         require(
@@ -92,3 +93,9 @@ contract Game {
 
     }
 }
+=======
+    function checkIfAddressIsAccount() public returns(address, uint256, uint256[] memory){
+        return accounts.GetPlayerIdAndData(msg.sender);
+    }
+}
+>>>>>>> added functions to game contract

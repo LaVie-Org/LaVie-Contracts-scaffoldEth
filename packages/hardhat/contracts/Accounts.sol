@@ -46,8 +46,8 @@ contract Accounts is ERC721, ERC721URIStorage, ContextMixin, Ownable {
 
     struct Account {
         address owner;
-        uint256 accountId;
-        uint256[] items; //account nft id
+        uint256 accountId; //account nft id
+        uint256[] items; 
         mapping(uint256 => ItemInventory) inventory;
         bool deleted;
     }
@@ -407,5 +407,14 @@ contract Accounts is ERC721, ERC721URIStorage, ContextMixin, Ownable {
     function _msgSender() internal view override returns (address sender) {
 
         return ContextMixin.msgSender();
+    }
+
+    function GetPlayerIdAndData(address player) external returns(address, uint256, uint256[] memory) {
+        uint256 playerId = this.players(player);
+        return (
+            account[playerId][player].owner,
+            account[playerId][player].accountId,
+            account[playerId][player].items
+        );
     }
 }
