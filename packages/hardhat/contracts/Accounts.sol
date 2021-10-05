@@ -335,7 +335,9 @@ contract Accounts is ERC721, ERC721URIStorage, ContextMixin, Ownable {
         uint256 itemId,
         uint256 amount
     ) internal {
-        account[accountId][player].items.push(itemId);
+        if(account[accountId][player].inventory[itemId].amount == 0) {
+            account[accountId][player].items.push(itemId);
+        }
         account[accountId][player].inventory[itemId].amount += amount;
         emit ItemReceived(player, accountId, itemId);
     }
@@ -409,8 +411,8 @@ contract Accounts is ERC721, ERC721URIStorage, ContextMixin, Ownable {
         return ContextMixin.msgSender();
     }
 
-    function GetPlayerIdAndData(address player) external returns(address, uint256, uint256[] memory) {
-        uint256 playerId = this.players(player);
+    function GetPlayerIdAndData(address player) view external returns(address, uint256, uint256[] memory) {
+        uint256 playerId = players[player];
         return (
             account[playerId][player].owner,
             account[playerId][player].accountId,

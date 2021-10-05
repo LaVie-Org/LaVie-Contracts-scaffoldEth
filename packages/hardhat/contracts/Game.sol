@@ -37,13 +37,13 @@ contract Game {
             "La Vie: Wrong account type."
         );
 
-        if (accountType == 2) {
+        /*if (accountType == 2) {
             require(msg.value >= 50 ether);
             stakeManager.stake(msg.sender, msg.value, 30);
         } else if (accountType == 3) {
             require(msg.value >= 100 ether);
             stakeManager.stake(msg.sender, msg.value, 60);
-        }
+        }*/
         createPlayerAccount(player, playerStateURI, accountType);
     }
 
@@ -89,7 +89,10 @@ contract Game {
 
     function setVestID(uint64 vestID) external{
         stakeManager.setVestID(msg.sender, vestID);
-
     }
-    
+
+    function getPlayerData() public view returns(address, uint256, uint256[] memory) {
+        return accounts.GetPlayerIdAndData(msg.sender);
+    }
+
 }
