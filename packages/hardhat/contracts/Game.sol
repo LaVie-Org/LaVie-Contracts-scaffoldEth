@@ -90,4 +90,10 @@ contract Game {
     function setVestID(uint64 vestID) external {
         stakeManager.setVestID(msg.sender, vestID);
     }
+
+    function getPlayerData() public view returns(address, uint256, uint256[] memory) {
+        return accounts.GetPlayerIdAndData(msg.sender);
+
+    }
+
 }

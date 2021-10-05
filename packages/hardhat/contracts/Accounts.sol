@@ -51,8 +51,8 @@ contract Accounts is
 
     struct Account {
         address owner;
-        uint256 accountId;
-        uint256[] items; //account nft id
+        uint256 accountId; //account nft id
+        uint256[] items; 
         mapping(uint256 => ItemInventory) inventory;
         bool deleted;
     }
@@ -323,7 +323,9 @@ contract Accounts is
         uint256 itemId,
         uint256 amount
     ) internal {
-        account[accountId][player].items.push(itemId);
+        if(account[accountId][player].inventory[itemId].amount == 0) {
+            account[accountId][player].items.push(itemId);
+        }
         account[accountId][player].inventory[itemId].amount += amount;
         emit ItemReceived(player, accountId, itemId);
     }
@@ -389,5 +391,14 @@ contract Accounts is
 
     function _msgSender() internal view override returns (address sender) {
         return ContextMixin.msgSender();
+    }
+
+    function GetPlayerIdAndData(address player) view external returns(address, uint256, uint256[] memory) {
+        uint256 playerId = players[player];
+        return (
+            account[playerId][player].owner,
+            account[playerId][player].accountId,
+            account[playerId][player].items
+        );
     }
 }
