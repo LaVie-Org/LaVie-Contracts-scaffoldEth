@@ -6,6 +6,8 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {Base64} from "./libraries/Base64.sol";
 
+import "./LavToken.sol";
+
 contract TheLaVieBoard is ERC721URIStorage {
     uint256 currentPrice = 0;
 
@@ -13,8 +15,9 @@ contract TheLaVieBoard is ERC721URIStorage {
     string storedSecondLine = "";
     string storedThirdLine = "";
 
-    //MUMBAI
-    ERC20 public LaVxToken;
+     address public owner;
+
+    LavToken public LaVxToken;
 
     event LaVieBoardUpdated(
         string first,
@@ -24,10 +27,10 @@ contract TheLaVieBoard is ERC721URIStorage {
         address indexed by
     );
 
-    constructor() ERC721("LaVie Board", "LAVIEBOARD") {
+    constructor(LavToken _laVxToken) ERC721("LaVie Board", "LAVIEBOARD") {
+        owner = msg.sender;
         _safeMint(msg.sender, 1);
-        //MUMBAI
-        LaVxToken = ERC20(0x5Dda1E95142f31F8F8ff926724BB2E3A040cAAf8);
+        LaVxToken = _laVxToken;
     }
 
     function tokenURI(uint256 tokenId)

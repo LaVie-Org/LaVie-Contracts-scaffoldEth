@@ -54,9 +54,13 @@ module.exports = {
   networks: {
     hardhat:{
       forking:{
-        url: process.env.ETHEREUM
+        url: process.env.ETHEREUM,
+        // accounts: [`0x${process.env.PRIVATE_KEY}`]
+        // accounts: {
+        //   mnemonic: mnemonic()
+        },
+      // },
       },
-    },
     localhost: {
       url: "http://localhost:8545",
       /*      

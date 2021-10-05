@@ -17,9 +17,9 @@ contract Game {
     function newPlayer(
         address player,
         string memory playerStateURI,
-        uint8 accountType
-    ) external payable{
-
+        uint8 accountType,
+        uint256 amount
+    ) external {
         //1. take stake
         //2. create account
         //3. assign items
@@ -37,13 +37,17 @@ contract Game {
             "La Vie: Wrong account type."
         );
 
-        if (accountType == 2) {
-            require(msg.value >= 50 ether);
-            stakeManager.stake(msg.sender, msg.value, 30);
+        if (accountType == 1) {
+            require(amount == 0,"La Vie: Can't stake with accountType 1!");
+            createPlayerAccount(player, playerStateURI, accountType);
+        } else if (accountType == 2) {
+            require(amount == 50 ether,"La Vie: Wrong stake amount!");
+            stakeManager.stake(msg.sender, amount, 30);
         } else if (accountType == 3) {
-            require(msg.value >= 100 ether);
-            stakeManager.stake(msg.sender, msg.value, 60);
+            require(amount >= 100 ether,"La Vie: Wrong stake amount!");
+            stakeManager.stake(msg.sender, amount, 60);
         }
+        console.log("shouldnt log");
         createPlayerAccount(player, playerStateURI, accountType);
     }
 
@@ -53,6 +57,7 @@ contract Game {
             msg.sender == accounts.getAccountOwner(tokenId),
             "La Vie: Cannot delete an unowned account"
         );
+        // require(!stakeManager.isStakingBool(player), "La Vie: Unstake first!");
         accounts.deleteAccount(player, tokenId);
     }
 
@@ -78,17 +83,11 @@ contract Game {
         accounts.playerReceivesItemFromGame(player, tokenId, itemId);
     }
 
-    function unstake(address player, uint256 tokenId) external {
-        require(accounts.exists(tokenId), "La Vie: token does not exist");
-        require(
-            msg.sender == accounts.getAccountOwner(tokenId),
-            "La Vie: Cannot unstake an unowned account"
-        );
-        stakeManager.unstake(player);
+    function unstake() external {
+        stakeManager.unstake(msg.sender);
     }
 
-    function setVestID(uint64 vestID) external{
+    function setVestID(uint64 vestID) external {
         stakeManager.setVestID(msg.sender, vestID);
-
     }
 }
