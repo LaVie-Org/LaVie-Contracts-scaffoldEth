@@ -16,7 +16,7 @@ contract TheLaVieBoard is ERC721URIStorage {
     string storedThirdLine = "";
 
      address public owner;
-     address private constant laVxToken = 0x5Dda1E95142f31F8F8ff926724BB2E3A040cAAf8;
+     address private constant laVxAddress = 0x5Dda1E95142f31F8F8ff926724BB2E3A040cAAf8;
 
     ERC20 private LaVxToken;
 
@@ -31,7 +31,7 @@ contract TheLaVieBoard is ERC721URIStorage {
     constructor() ERC721("LaVie Board", "LAVIEBOARD") {
         owner = msg.sender;
         _safeMint(msg.sender, 1);
-        LaVxToken = ERC20(laVxToken);
+        LaVxToken = ERC20(laVxAddress);
     }
 
     function tokenURI(uint256 tokenId)
