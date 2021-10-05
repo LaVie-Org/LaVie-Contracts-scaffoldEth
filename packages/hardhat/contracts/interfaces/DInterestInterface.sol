@@ -16,4 +16,8 @@ interface DInterestInterface {
         string calldata uri)
         external
         returns (uint64 depositID, uint256 interestAmount);
+
+        function topupDeposit(uint64 depositID, uint256 depositAmount)
+        external
+        returns (uint256 interestAmount);
 }

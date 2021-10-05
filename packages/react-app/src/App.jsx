@@ -457,12 +457,12 @@ function App(props) {
               DaiToken
             </Link>
           </Menu.Item>
-          <Menu.Item key="/">
+          <Menu.Item key="/LavToken">
             <Link
               onClick={() => {
-                setRoute("/");
+                setRoute("/lavtoken");
               }}
-              to="/"
+              to="/lavtoken"
             >
               LavToken
             </Link>
@@ -477,6 +477,16 @@ function App(props) {
               StakeManager
             </Link>
           </Menu.Item>
+          <Menu.Item key="/TheLaVieBoard">
+            <Link
+              onClick={() => {
+                setRoute("/lavieboard");
+              }}
+              to="/lavieboard"
+            >
+              LaVieBoard
+            </Link>
+          </Menu.Item>
           <Menu.Item key="/hints">
             <Link
               onClick={() => {
@@ -487,12 +497,12 @@ function App(props) {
               Hints
             </Link>
           </Menu.Item>
-          <Menu.Item key="/game">
+          <Menu.Item key="/">
             <Link
               onClick={() => {
-                setRoute("/game");
+                setRoute("/");
               }}
-              to="/game"
+              to="/"
             >
               Game
             </Link>
@@ -550,7 +560,7 @@ function App(props) {
         </Menu>
 
         <Switch>
-          <Route exact path="/">
+          <Route exact path="/lavtoken">
             {/*
                 🎛 this scaffolding is full of commonly used components
                 this <Contract/> component will automatically parse your ABI
@@ -576,6 +586,16 @@ function App(props) {
           <Route path="/stakemanager">
             <Contract
               name="StakeManager"
+              signer={userSigner}
+              provider={localProvider}
+              address={address}
+              blockExplorer={blockExplorer}
+              contractConfig={contractConfig}
+            />
+          </Route>
+          <Route path="/lavieboard">
+            <Contract
+              name="TheLaVieBoard"
               signer={userSigner}
               provider={localProvider}
               address={address}
@@ -613,7 +633,7 @@ function App(props) {
               contractConfig={contractConfig}
             />
           </Route>
-          <Route path="/game">
+          <Route path="/">
             <Contract
               name="Game"
               signer={userSigner}
