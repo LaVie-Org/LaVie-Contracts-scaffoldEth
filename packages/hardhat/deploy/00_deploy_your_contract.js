@@ -38,9 +38,16 @@ module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
     log: true,
   });
 
+  
+  stakeManager = await deploy("StakeManager", {
+    from: deployer,
+    args: [DAI_ADDRESS],
+    log: true,
+  });
+
   const accounts = await deploy("Accounts", {
     from: deployer,
-    args: [items.address],
+    args: [items.address, stakeManager.address],
     log: true,
   });
 
@@ -54,29 +61,23 @@ module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
 
   // const rinkebyDAIAddress = "0x5592ec0cfb4dbc12d3ab100b257153436a1f0fea";
 
-  stakeManager = await deploy("StakeManager", {
-    from: deployer,
-    args: [DAI_ADDRESS],
-    log: true,
-  });
-
   const game = await deploy("Game", {
     from: deployer,
     args: [accounts.address, stakeManager.address],
     log: true,
   });
 
-  const lavToken = await deploy("LavToken", {
-    from: deployer,
-    // args:
-    log: true,
-  });
+  // const lavToken = await deploy("LavToken", {
+  //   from: deployer,
+  //   // args:
+  //   log: true,
+  // });
 
-  await deploy("TheLaVieBoard", {
-    from: deployer,
-    args: [lavToken.address],
-    log: true,
-  });
+  // await deploy("TheLaVieBoard", {
+  //   from: deployer,
+  //   // args: [lavToken.address],
+  //   log: true,
+  // });
 
   // await lavToken._transferOwnership(stakeManager.address);
   //const lav = await ethers.getContract("LavToken", deployer);

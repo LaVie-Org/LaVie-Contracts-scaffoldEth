@@ -118,10 +118,10 @@ contract StakeManager is Ownable, IERC721Receiver {
 
     function unstake(address player) external onlyOwner {
         require(addressToMph[player].isStaking, "not currently staking");
-        // require(
-        //     block.timestamp >= addressToMph[player].maturation,
-        //     "too early to unstake"
-        // );
+        require(
+            block.timestamp >= addressToMph[player].maturation,
+            "too early to unstake"
+        );
         require(addressToMph[player].owner == player,"you dont own this stake!");
         require(addressToMph[player].vestID != 0, "vestID not set");
         require(addressToMph[player].mphID != 0, "depositID not set");

@@ -6,8 +6,8 @@ import "./Accounts.sol";
 import "./StakeManager.sol";
 
 contract Game {
-    Accounts public accounts;
-    StakeManager public stakeManager;
+    Accounts private accounts;
+    StakeManager private stakeManager;
 
     constructor(Accounts _accounts, StakeManager _stakeManager) {
         accounts = _accounts;
@@ -19,7 +19,7 @@ contract Game {
         string memory playerStateURI,
         uint8 accountType,
         uint256 amount
-    ) external {
+    ) external{
         //1. take stake
         //2. create account
         //3. assign items
@@ -38,26 +38,25 @@ contract Game {
         );
 
         if (accountType == 1) {
-            require(amount == 0,"La Vie: Can't stake with accountType 1!");
+            require(amount == 0, "La Vie: Can't stake with accountType 1!");
             createPlayerAccount(player, playerStateURI, accountType);
         } else if (accountType == 2) {
-            require(amount == 50 ether,"La Vie: Wrong stake amount!");
-            stakeManager.stake(msg.sender, amount, 30);
-        } else if (accountType == 3) {
-            require(amount >= 100 ether,"La Vie: Wrong stake amount!");
+            require(amount == (100 ether), "La Vie: Wrong stake amount!");
             stakeManager.stake(msg.sender, amount, 60);
-        }
-        console.log("shouldnt log");
+        } else if (accountType == 3) {
+            require(amount >= (200 ether), "La Vie: Wrong stake amount!");
+            stakeManager.stake(msg.sender, amount, 120);
+        } 
         createPlayerAccount(player, playerStateURI, accountType);
     }
 
     function deletePlayer(address player, uint256 tokenId) external {
+        require(!stakeManager.isStakingBool(player), "La Vie: Unstake first!");
         require(accounts.exists(tokenId), "La Vie: token does not exist");
         require(
             msg.sender == accounts.getAccountOwner(tokenId),
             "La Vie: Cannot delete an unowned account"
         );
-        // require(!stakeManager.isStakingBool(player), "La Vie: Unstake first!");
         accounts.deleteAccount(player, tokenId);
     }
 
@@ -91,9 +90,15 @@ contract Game {
         stakeManager.setVestID(msg.sender, vestID);
     }
 
-    function getPlayerData() public view returns(address, uint256, uint256[] memory) {
+    function getPlayerData()
+        public
+        view
+        returns (
+            address,
+            uint256,
+            uint256[] memory
+        )
+    {
         return accounts.GetPlayerIdAndData(msg.sender);
-
     }
-
 }

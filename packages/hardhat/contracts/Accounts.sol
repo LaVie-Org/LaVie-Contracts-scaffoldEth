@@ -8,6 +8,7 @@ import "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./Items.sol";
+import "./StakeManager.sol";
 import "hardhat/console.sol";
 
 abstract contract ContextMixin {
@@ -37,6 +38,7 @@ contract Accounts is
 {
     address private ACCOUNT_MANAGER;
     address private MARKETPLACE_OPERATOR;
+    StakeManager private stakeManager;
 
     using Counters for Counters.Counter;
     using EnumerableMap for EnumerableMap.UintToAddressMap;
@@ -65,8 +67,9 @@ contract Accounts is
     event AccountDeleted(address player);
     event ItemReceived(address player, uint256 tokenId, uint256 itemId);
 
-    constructor(Items _items) ERC721("LaVAccounts", "LaVAccounts") {
+    constructor(Items _items, StakeManager _stakeManager) ERC721("LaVAccounts", "LaVAccounts") {
         itemsContract = _items;
+        stakeManager = _stakeManager;
         ACCOUNT_MANAGER = owner();
     }
 
@@ -134,6 +137,7 @@ contract Accounts is
         address to,
         uint256 tokenId
     ) public override {
+        require(!stakeManager.isStakingBool(from),"La Vie: Unstake first!");
         super.transferFrom(from, to, tokenId);
         changeAccountOwnership(from, tokenId, to);
         _accountOwner.set(tokenId, to);
