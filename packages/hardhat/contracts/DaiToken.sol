@@ -10,7 +10,6 @@ contract DaiToken {
     // address private constant DAI_ADDRESS =
     //     0x001B3B4d0F3714Ca98ba10F6042DaEbF0B1B7b6F;
 
-    address public dai_address = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
     ERC20 Dai;
 
     constructor(address DAI_ADDRESS) {

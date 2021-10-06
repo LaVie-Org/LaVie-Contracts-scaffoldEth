@@ -10,15 +10,21 @@ const DAIabi = require("../contracts/externalAbis/DAIabi.json");
 
 //const { ethers } = require("hardhat");
 
-const VITALIK = "0xB60C61DBb7456f024f9338c739B02Be68e3F545C";
+//RINKEBY
+const DAI_WHALE = "0xC2ad4f9799Dc7Cbc88958d1165bC43507664f3E0";
+const DAI_ADDRESS = "0x5592ec0cfb4dbc12d3ab100b257153436a1f0fea"
+
+//ETHEREUM
+// const DAI_WHALE="0xB60C61DBb7456f024f9338c739B02Be68e3F545C"
+// const DAI_ADDRESS = "0x6b175474e89094c44da98b954eedeac495271d0f";
+
+//MUMBAI
+// const DAI_ADDRESS = "0x001b3b4d0f3714ca98ba10f6042daebf0b1b7b6f";
+
 //metamask
 // const TARGET = "0x7b3813a943391465Dd62B648529c337e52FbA79b";
 const TARGET = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
 
-//ETHEREUM DAI
-const DAI_ADDRESS = "0x6b175474e89094c44da98b954eedeac495271d0f";
-//MUMBAI DAI
-// const DAI_ADDRESS = "0x001b3b4d0f3714ca98ba10f6042daebf0b1b7b6f";
 
 let stakeManager;
 
@@ -73,11 +79,10 @@ module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
   //   log: true,
   // });
 
-  // await deploy("TheLaVieBoard", {
-  //   from: deployer,
-  //   // args: [lavToken.address],
-  //   log: true,
-  // });
+  await deploy("TheLaVieBoard", {
+    from: deployer,
+    log: true,
+  });
 
   // await lavToken._transferOwnership(stakeManager.address);
   //const lav = await ethers.getContract("LavToken", deployer);
@@ -173,10 +178,10 @@ module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
 async function impersonate() {
   await hre.network.provider.request({
     method: "hardhat_impersonateAccount",
-    params: [VITALIK],
+    params: [DAI_WHALE],
   });
 
-  const signer = await ethers.getSigner(VITALIK);
+  const signer = await ethers.getSigner(DAI_WHALE);
   const signerAddress = await signer.getAddress();
 
   const myDAIContract = await ethers.getContractAt(
@@ -210,4 +215,4 @@ module.exports.tags = [
   "IERC20",
 ];
 
-impersonate();
+// impersonate();

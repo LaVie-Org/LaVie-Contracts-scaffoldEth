@@ -12,12 +12,17 @@ interface DInterestInterface {
         bool early
     ) external returns (uint256 withdrawnStablecoinAmount);
 
-        function deposit(uint256 depositAmount, uint64 maturationTimestamp, uint256 minimumInterestAmount,
-        string calldata uri)
-        external
-        returns (uint64 depositID, uint256 interestAmount);
+    // function deposit(uint256 depositAmount, uint64 maturationTimestamp, uint256 minimumInterestAmount,
+    // string calldata uri)
+    // external
+    // returns (uint64 depositID, uint256 interestAmount);
 
-        function topupDeposit(uint64 depositID, uint256 depositAmount)
+    function deposit(
+        uint256 depositAmount,
+        uint64 maturationTimestamp
+    ) external returns (uint64 depositID, uint256 interestAmount);
+
+    function topupDeposit(uint64 depositID, uint256 depositAmount)
         external
         returns (uint256 interestAmount);
 }

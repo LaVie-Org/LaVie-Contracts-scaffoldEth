@@ -16,7 +16,7 @@ contract TheLaVieBoard is ERC721URIStorage {
     string storedThirdLine = "";
 
      address public owner;
-     address private constant laVxAddress = 0x5Dda1E95142f31F8F8ff926724BB2E3A040cAAf8;
+     address private constant laVxAddress = 0x71b4f145617410eE50DC26d224D202e9278D71f1;
 
     ERC20 private LaVxToken;
 

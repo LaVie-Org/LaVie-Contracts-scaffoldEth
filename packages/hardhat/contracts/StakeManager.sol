@@ -46,12 +46,21 @@ contract StakeManager is Ownable, IERC721Receiver {
     //     0x59EE65726f0b886Ec924271B51A3c1e78F52d1FB;
 
     //Mainnet Ethereum
+    // address private constant DInterestPoolAddress =
+    //     0x11B1c87983F881B3686F8b1171628357FAA30038;
+    // address private constant IVesting02Address =
+    //     0x137C9A85Cde23318E3fA8d4E486cD62F46095cc8;
+    // address private constant MphAddress =
+    //     0x8888801aF4d980682e47f1A9036e589479e835C5;
+
+    // RINKEBY
     address private constant DInterestPoolAddress =
-        0x11B1c87983F881B3686F8b1171628357FAA30038;
+        0x71482F8cD0e956051208603709639FA28cBc1F33;
     address private constant IVesting02Address =
-        0x137C9A85Cde23318E3fA8d4E486cD62F46095cc8;
+        0xab5bAA840b4C9321aa66144ffB2693E2db1166C7;
     address private constant MphAddress =
-        0x8888801aF4d980682e47f1A9036e589479e835C5;
+        0xC79a56Af51Ec36738E965e88100e4570c5C77A93;
+
 
     event Stake(mphStruct nft);
     event Unstake(address to, uint256 amount);
@@ -88,16 +97,25 @@ contract StakeManager is Ownable, IERC721Receiver {
         // transfer
         daiToken.transferFrom(player, payable(address(this)), amount);
 
+        console.log("transfered");
+
         uint64 maturationTimestamp = uint64(
             block.timestamp + (timeInDays * 1 days)
         );
+        console.log(maturationTimestamp);
         require(daiToken.approve(address(pool), amount));
+        console.log("approved");
         (uint64 depositID, ) = pool.deposit(
             amount,
-            maturationTimestamp,
-            0,
-            laVieImage
+            maturationTimestamp
+            // 0
+            // laVieImage
         );
+
+        console.log(depositID);
+
+        console.log("mph deposit");
+        
 
         addressToMph[player].owner = player;
         addressToMph[player].isStaking = true;
@@ -122,7 +140,10 @@ contract StakeManager is Ownable, IERC721Receiver {
             block.timestamp >= addressToMph[player].maturation,
             "too early to unstake"
         );
-        require(addressToMph[player].owner == player,"you dont own this stake!");
+        require(
+            addressToMph[player].owner == player,
+            "you dont own this stake!"
+        );
         require(addressToMph[player].vestID != 0, "vestID not set");
         require(addressToMph[player].mphID != 0, "depositID not set");
 
@@ -130,7 +151,7 @@ contract StakeManager is Ownable, IERC721Receiver {
         console.log("depositID: %s", depositID);
 
         uint64 vestID = addressToMph[player].vestID;
-        console.log("vestOD: %s",vestID);
+        console.log("vestOD: %s", vestID);
         uint256 rewards = vesting.withdraw(vestID);
 
         console.log(rewards);
@@ -161,7 +182,7 @@ contract StakeManager is Ownable, IERC721Receiver {
         return this.onERC721Received.selector;
     }
 
-    function isStakingBool(address player) external view returns(bool){
+    function isStakingBool(address player) external view returns (bool) {
         return addressToMph[player].isStaking;
     }
 
@@ -170,7 +191,10 @@ contract StakeManager is Ownable, IERC721Receiver {
             addressToMph[player].owner == player,
             "La Vie: You dont own this stake!"
         );
-        require(addressToMph[player].vestID == 0, "La Vie: vestID already set!");
+        require(
+            addressToMph[player].vestID == 0,
+            "La Vie: vestID already set!"
+        );
         require(
             addressToMph[player].mphID != 0,
             "La Vie: No deposit for this account!"

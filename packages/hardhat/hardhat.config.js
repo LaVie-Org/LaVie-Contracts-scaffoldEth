@@ -54,7 +54,7 @@ module.exports = {
   networks: {
     hardhat:{
       forking:{
-        url: process.env.ETHEREUM,
+        url: process.env.RINKEBY,
         // accounts: [`0x${process.env.PRIVATE_KEY}`]
         // accounts: {
         //   mnemonic: mnemonic()
