@@ -11,7 +11,6 @@ import "./interfaces/IVesting02.sol";
 import "./Accounts.sol";
 
 contract StakeManager is Ownable, IERC721Receiver {
-
     struct mphStruct {
         address owner;
         bool isStaking;
@@ -171,10 +170,6 @@ contract StakeManager is Ownable, IERC721Receiver {
         return this.onERC721Received.selector;
     }
 
-    function isStakingBool(address player) external view returns (bool) {
-        return addressToMph[player].isStaking;
-    }
-
     function setVestID(address player, uint64 vestID) external onlyOwner {
         require(
             addressToMph[player].owner == player,
@@ -189,5 +184,17 @@ contract StakeManager is Ownable, IERC721Receiver {
             "La Vie: No deposit for this account!"
         );
         addressToMph[player].vestID = vestID;
+    }
+
+    function getStakedAmount(address player) external view returns (uint256) {
+        return addressToMph[player].stakedAmount;
+    }
+
+    function getMaturation(address player) external view returns (uint64) {
+        return addressToMph[player].maturation;
+    }
+
+    function isStakingBool(address player) external view returns (bool) {
+        return addressToMph[player].isStaking;
     }
 }

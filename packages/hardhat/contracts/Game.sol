@@ -100,4 +100,16 @@ contract Game {
     {
         return accounts.GetPlayerIdAndData(msg.sender);
     }
+
+    function getStakedAmount(address player) external view returns(uint256){
+        return stakeManager.getStakedAmount(player);
+    }
+
+        function getMaturation(address player) external view returns(uint256){
+        return stakeManager.getMaturation(player);
+    }
+
+        function isStakingBool(address player) external view returns(bool){
+        return stakeManager.isStakingBool(player);
+    }
 }
