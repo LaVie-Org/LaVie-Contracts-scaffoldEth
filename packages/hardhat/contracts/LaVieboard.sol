@@ -3,20 +3,23 @@ pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+import "hardhat/console.sol";
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {Base64} from "./libraries/Base64.sol";
-
-import "./LavToken.sol";
 
 contract TheLaVieBoard is ERC721URIStorage {
     uint256 currentPrice = 0;
 
-    string storedFirstLine = "";
-    string storedSecondLine = "";
-    string storedThirdLine = "";
+    string public storedFirstLine = "";
+    string public storedSecondLine = "";
+    string public storedThirdLine = "";
 
-     address public owner;
-     address private constant laVxAddress = 0x71b4f145617410eE50DC26d224D202e9278D71f1;
+    mapping(uint256 => string[5]) public idToBoardInfo;
+    uint256 public index = 0;
+
+    address public owner;
+    address private constant laVxAddress =
+        0x71b4f145617410eE50DC26d224D202e9278D71f1;
 
     ERC20 private LaVxToken;
 
@@ -152,9 +155,20 @@ contract TheLaVieBoard is ERC721URIStorage {
         storedSecondLine = secondLine;
         storedThirdLine = thirdLine;
 
-        LaVxToken.approve(payable(address(this)),amount);
         LaVxToken.transferFrom(msg.sender, payable(address(this)), amount);
         currentPrice = amount;
+
+        string memory addressString = toAsciiString(msg.sender);
+        string memory amountString = uint2str(amount);
+
+        idToBoardInfo[index] = [
+            addressString,
+            firstLine,
+            secondLine,
+            thirdLine,
+            amountString
+        ];
+        index++;
 
         emit LaVieBoardUpdated(
             firstLine,
@@ -163,6 +177,21 @@ contract TheLaVieBoard is ERC721URIStorage {
             amount,
             msg.sender
         );
+    }
+
+    function fetchBoardInfo() external view returns (string[5][] memory) {
+        string[5][] memory  info = new string[5][](index);
+        for (uint256 i = 0; i < index; i++) {
+            info[i][0] = (idToBoardInfo[i][0]);
+            info[i][1] = (idToBoardInfo[i][1]);
+            info[i][2] = (idToBoardInfo[i][2]);
+            info[i][3] = (idToBoardInfo[i][3]);
+            info[i][4] = (idToBoardInfo[i][4]);
+
+
+            console.log(idToBoardInfo[4][i]);
+        }
+        return info;
     }
 
     function totalSupply() external pure returns (uint256) {
@@ -180,5 +209,48 @@ contract TheLaVieBoard is ERC721URIStorage {
             "not enough balance"
         );
         LaVxToken.transferFrom(address(this), sendToAddress, amount);
+    }
+
+    function toAsciiString(address x) internal pure returns (string memory) {
+        bytes memory s = new bytes(40);
+        for (uint256 i = 0; i < 20; i++) {
+            bytes1 b = bytes1(uint8(uint256(uint160(x)) / (2**(8 * (19 - i)))));
+            bytes1 hi = bytes1(uint8(b) / 16);
+            bytes1 lo = bytes1(uint8(b) - 16 * uint8(hi));
+            s[2 * i] = char(hi);
+            s[2 * i + 1] = char(lo);
+        }
+        return string(s);
+    }
+
+    function char(bytes1 b) internal pure returns (bytes1 c) {
+        if (uint8(b) < 10) return bytes1(uint8(b) + 0x30);
+        else return bytes1(uint8(b) + 0x57);
+    }
+
+    function uint2str(uint256 _i)
+        internal
+        pure
+        returns (string memory _uintAsString)
+    {
+        if (_i == 0) {
+            return "0";
+        }
+        uint256 j = _i;
+        uint256 len;
+        while (j != 0) {
+            len++;
+            j /= 10;
+        }
+        bytes memory bstr = new bytes(len);
+        uint256 k = len;
+        while (_i != 0) {
+            k = k - 1;
+            uint8 temp = (48 + uint8(_i - (_i / 10) * 10));
+            bytes1 b1 = bytes1(temp);
+            bstr[k] = b1;
+            _i /= 10;
+        }
+        return string(bstr);
     }
 }

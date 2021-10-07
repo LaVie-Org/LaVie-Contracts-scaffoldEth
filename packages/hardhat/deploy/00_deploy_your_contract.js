@@ -12,7 +12,7 @@ const DAIabi = require("../contracts/externalAbis/DAIabi.json");
 
 //RINKEBY
 const DAI_WHALE = "0xC2ad4f9799Dc7Cbc88958d1165bC43507664f3E0";
-const DAI_ADDRESS = "0x5592ec0cfb4dbc12d3ab100b257153436a1f0fea"
+const DAI_ADDRESS = "0x5592ec0cfb4dbc12d3ab100b257153436a1f0fea";
 
 //ETHEREUM
 // const DAI_WHALE="0xB60C61DBb7456f024f9338c739B02Be68e3F545C"
@@ -25,12 +25,11 @@ const DAI_ADDRESS = "0x5592ec0cfb4dbc12d3ab100b257153436a1f0fea"
 // const TARGET = "0x7b3813a943391465Dd62B648529c337e52FbA79b";
 const TARGET = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
 
-
 let stakeManager;
 
 module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
   const { deploy } = deployments;
-  const { deployer } = await getNamedAccounts()
+  const { deployer } = await getNamedAccounts();
 
   const items = await deploy("Items", {
     from: deployer,
@@ -44,7 +43,6 @@ module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
     log: true,
   });
 
-  
   stakeManager = await deploy("StakeManager", {
     from: deployer,
     args: [DAI_ADDRESS],
@@ -73,13 +71,13 @@ module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
     log: true,
   });
 
-  // const lavToken = await deploy("LavToken", {
-  //   from: deployer,
-  //   // args:
-  //   log: true,
-  // });
+  const laVxToken = await deploy("LaVxToken", {
+    from: deployer,
+    // args:
+    log: true,
+  });
 
-  await deploy("TheLaVieBoard", {
+  const lavieboard = await deploy("TheLaVieBoard", {
     from: deployer,
     log: true,
   });
@@ -105,15 +103,38 @@ module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
 
   const DAI_ABI = [
     "function approve(address _spender, uint256 _value) public returns (bool success) ",
-    "function allowance(address owner, address spender)external view returns (uint256 remaining)"
+    "function allowance(address owner, address spender)external view returns (uint256 remaining)",
   ];
   const myDAIContract = await ethers.getContractAt(DAI_ABI, DAI_ADDRESS);
+  const myLaVxContract = await ethers.getContractAt(
+    DAI_ABI,
+    "0x71b4f145617410eE50DC26d224D202e9278D71f1"
+  );
+  const LaVieBoard = await ethers.getContractAt(
+    "TheLaVieBoard",
+    lavieboard.address
+  );
 
-  await myDAIContract.approve(StakeManager.address, parseEther("500000000000000000000"));
+  await myDAIContract.approve(
+    StakeManager.address,
+    parseEther("500000000000000000000")
+  );
+
+  await myLaVxContract.approve(
+    LaVieBoard.address,
+    parseEther("500000000000000000000")
+  );
 
   // console.log(await myDAIContract.)
-  console.log("deployer: "+deployer)
-  console.log("allowance: " + await myDAIContract.allowance(deployer, StakeManager.address))
+  console.log("deployer: " + deployer);
+  console.log(
+    "allowance DAI: " +
+      (await myDAIContract.allowance(deployer, StakeManager.address))
+  );
+  console.log(
+    "allowance laVx: " +
+      (await myLaVxContract.allowance(deployer, LaVieBoard.address))
+  );
 
   // const LavToken = await ethers.getContractAt("LavToken", lavToken.address);
 

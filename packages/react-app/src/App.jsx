@@ -457,14 +457,14 @@ function App(props) {
               DaiToken
             </Link>
           </Menu.Item>
-          <Menu.Item key="/LavToken">
+          <Menu.Item key="/LaVxToken">
             <Link
               onClick={() => {
-                setRoute("/lavtoken");
+                setRoute("/LaVxToken");
               }}
-              to="/lavtoken"
+              to="/LaVxToken"
             >
-              LavToken
+              LaVxToken
             </Link>
           </Menu.Item>
           <Menu.Item key="/StakeManager">
@@ -560,14 +560,14 @@ function App(props) {
         </Menu>
 
         <Switch>
-          <Route exact path="/lavtoken">
+          <Route exact path="/LaVxToken">
             {/*
                 🎛 this scaffolding is full of commonly used components
                 this <Contract/> component will automatically parse your ABI
                 and give you a form to interact with it locally
             */}
             <Contract
-              name="LavToken"
+              name="LaVxToken"
               signer={userSigner}
               provider={localProvider}
               address={address}

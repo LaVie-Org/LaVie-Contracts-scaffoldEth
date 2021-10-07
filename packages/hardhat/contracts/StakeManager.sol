@@ -6,17 +6,11 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
-import "./interfaces/ISuperToken.sol";
 import "./interfaces/DInterestInterface.sol";
 import "./interfaces/IVesting02.sol";
 import "./Accounts.sol";
 
 contract StakeManager is Ownable, IERC721Receiver {
-    // userAddress => stakingBalance
-    mapping(address => uint256) public stakingBalance;
-    // userAddress => isStaking boolean
-    mapping(address => bool) public isStaking;
-    //track the user’s unrealized yield
 
     struct mphStruct {
         address owner;
@@ -61,7 +55,6 @@ contract StakeManager is Ownable, IERC721Receiver {
     address private constant MphAddress =
         0xC79a56Af51Ec36738E965e88100e4570c5C77A93;
 
-
     event Stake(mphStruct nft);
     event Unstake(address to, uint256 amount);
 
@@ -69,11 +62,8 @@ contract StakeManager is Ownable, IERC721Receiver {
     IVesting02 vesting;
     IERC20 Mph;
 
-    //inject the token addresses
     constructor(ERC20 _daiToken) {
         daiToken = _daiToken;
-        // lavToken = _lavToken;
-        // laVxToken = _laVxToken;
         pool = DInterestInterface(DInterestPoolAddress);
         vesting = IVesting02(IVesting02Address);
         Mph = IERC20(MphAddress);
@@ -115,7 +105,6 @@ contract StakeManager is Ownable, IERC721Receiver {
         console.log(depositID);
 
         console.log("mph deposit");
-        
 
         addressToMph[player].owner = player;
         addressToMph[player].isStaking = true;
