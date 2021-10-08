@@ -7,6 +7,7 @@ import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "./interfaces/DInterestInterface.sol";
+import "./interfaces/CErc20.sol";
 import "./interfaces/IVesting02.sol";
 import "./Accounts.sol";
 
@@ -20,7 +21,18 @@ contract StakeManager is Ownable, IERC721Receiver {
         uint256 stakedAmount;
     }
 
+    struct cmpStruct {
+        address owner;
+        bool isStaking;
+        uint64 maturation;
+        uint256 cDAIAmount;
+    }
+
     mapping(address => mphStruct) private addressToMph;
+    mapping(address => cmpStruct) private addressToCmp;
+
+    //0: not staking, 1: MPH staking, 2: CMP staking
+    mapping(address => uint8) private addressToStakeType;
 
     string public name = "StakeManager";
 
@@ -53,9 +65,13 @@ contract StakeManager is Ownable, IERC721Receiver {
         0xab5bAA840b4C9321aa66144ffB2693E2db1166C7;
     address private constant MphAddress =
         0xC79a56Af51Ec36738E965e88100e4570c5C77A93;
+    address private constant cDAIAddress =
+        0x6D7F0754FFeb405d23C51CE938289d4835bE3b14;
 
-    event Stake(mphStruct nft);
+    event Stake1(mphStruct nft);
+    event Stake2(cmpStruct nft);
     event Unstake(address to, uint256 amount);
+    event MyLog(string, uint256);
 
     DInterestInterface pool;
     IVesting02 vesting;
@@ -72,7 +88,8 @@ contract StakeManager is Ownable, IERC721Receiver {
     function stake(
         address player,
         uint256 amount,
-        uint256 timeInDays
+        uint256 timeInDays,
+        uint8 stakeType
     ) external onlyOwner {
         uint256 allowance = daiToken.allowance(player, address(this));
         require(allowance >= amount, "check the token allowance");
@@ -81,12 +98,25 @@ contract StakeManager is Ownable, IERC721Receiver {
             amount > 0 && daiToken.balanceOf(player) >= amount,
             "Not enough DAI tokens"
         );
-        require(!(addressToMph[player].isStaking), "already staking");
 
         // transfer
         daiToken.transferFrom(player, payable(address(this)), amount);
 
         console.log("transfered");
+        if (stakeType == 1) {
+            supplyDAITo88MPH(player, amount, timeInDays, stakeType);
+        } else if (stakeType == 2) {
+            supplyDAIToCompound(player, amount, timeInDays, stakeType);
+        }
+    }
+
+    function supplyDAITo88MPH(
+        address player,
+        uint256 amount,
+        uint256 timeInDays,
+        uint8 stakeType
+    ) internal {
+        require(!(addressToMph[player].isStaking), "La Vie: Already staking!");
 
         uint64 maturationTimestamp = uint64(
             block.timestamp + (timeInDays * 1 days)
@@ -119,11 +149,68 @@ contract StakeManager is Ownable, IERC721Receiver {
         );
         console.log("depositID for %s : %s ", player, depositID);
 
-        emit Stake(addressToMph[msg.sender]);
+        addressToStakeType[player] = stakeType;
+
+        emit Stake1(addressToMph[msg.sender]);
+    }
+
+    function supplyDAIToCompound(
+        address player,
+        uint256 amount,
+        uint256 timeInDays,
+        uint8 stakeType
+    ) public returns (uint256) {
+        require(!(addressToCmp[player].isStaking), "La Vie: Already staking!");
+
+        uint64 maturationTimestamp = uint64(
+            block.timestamp + (timeInDays * 1 days)
+        );
+
+        CErc20 cDAI = CErc20(0x6D7F0754FFeb405d23C51CE938289d4835bE3b14);
+
+        // Amount of current exchange rate from cToken to underlying
+        uint256 exchangeRateMantissa = cDAI.exchangeRateCurrent();
+        emit MyLog("Exchange Rate (scaled up): ", exchangeRateMantissa);
+
+        //Amount added to your supply balance this block
+        uint256 supplyRateMantissa = cDAI.supplyRatePerBlock();
+        emit MyLog("Supply Rate (scaled up): ", supplyRateMantissa);
+
+        //Approve transfer on the DAI contract
+        daiToken.approve(cDAIAddress, amount);
+
+        // Mint cTokens
+        uint256 mintResult = cDAI.mint(amount);
+
+        addressToCmp[player].owner = player;
+        addressToCmp[player].isStaking = true;
+        addressToCmp[player].maturation = maturationTimestamp;
+        addressToCmp[player].cDAIAmount = mintResult;
+
+        addressToStakeType[player] = stakeType;
+
+        emit Stake2(addressToCmp[player]);
+
+        return mintResult;
     }
 
     function unstake(address player) external onlyOwner {
-        require(addressToMph[player].isStaking, "not currently staking");
+        require(
+            addressToStakeType[player] != 0,
+            "La Vie: Not currently staking!"
+        );
+        if (addressToStakeType[player] == 1) {
+            redeemDAIFrom88mph(player);
+        } else if (addressToStakeType[player] == 2) {
+            redeemDAIFromCMP(player);
+        }
+    }
+
+    function redeemDAIFrom88mph(address player) internal {
+        require(
+            addressToMph[player].isStaking,
+            "La Vie: Not currently staking!"
+        );
         require(
             block.timestamp >= addressToMph[player].maturation,
             "too early to unstake"
@@ -158,7 +245,44 @@ contract StakeManager is Ownable, IERC721Receiver {
         addressToMph[player].mphID = 0;
         addressToMph[player].vestID = 0;
 
+        addressToStakeType[player] = 0;
+
         emit Unstake(player, amount);
+    }
+
+    function redeemDAIFromCMP(address player) internal {
+        require(
+            addressToCmp[player].isStaking,
+            "La Vie: Not currently staking!"
+        );
+        require(
+            block.timestamp >= addressToCmp[player].maturation,
+            "too early to unstake"
+        );
+        require(
+            addressToCmp[player].owner == player,
+            "you dont own this stake!"
+        );
+
+        CErc20 cDAI = CErc20(cDAIAddress);
+
+        uint256 redeemResult;
+
+        cDAI.redeem(addressToCmp[player].cDAIAmount);
+
+        emit MyLog("If this is not 0, there was an error", redeemResult);
+        require(redeemResult == 0, "redeemResult error");
+
+        cDAI.transferFrom(address(this), payable(player), addressToCmp[player].cDAIAmount);
+
+        addressToCmp[player].owner = address(0);
+        addressToCmp[player].isStaking = false;
+        addressToCmp[player].maturation = 0;
+        addressToCmp[player].cDAIAmount = 0;
+
+        addressToStakeType[player] = 0;
+
+        emit Unstake(player, addressToCmp[player].cDAIAmount);
     }
 
     function onERC721Received(

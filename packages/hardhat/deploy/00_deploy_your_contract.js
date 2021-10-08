@@ -125,6 +125,8 @@ module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
     parseEther("500000000000000000000")
   );
 
+
+
   // console.log(await myDAIContract.)
   console.log("deployer: " + deployer);
   console.log(
@@ -136,23 +138,22 @@ module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
       (await myLaVxContract.allowance(deployer, LaVieBoard.address))
   );
 
-  // const LavToken = await ethers.getContractAt("LavToken", lavToken.address);
+///////////gives error network connection??//////////////////
 
-  // await LavToken._transferOwnership(stakeManager.address);
+  // const Game = await ethers.getContractAt("Game", game.address);
+  
+  // let tx = await Game.newPlayer(
+  //   deployer,
+  //   "54645",
+  //   3,
+  //   parseEther("200")
+  // );
+  // let receipt = await tx.wait();
+  // console.log(receipt);
+  // let events = receipt.events;
+  // console.log("events: "+events[1].args);
 
-  // await lavToken._transferOwnership(stakeManager.address);
-  // const lav = await ethers.getContract("LavToken", deployer);
-  // await lav._transferOwnership(stakeManager.address);
 
-  //
-
-  // const Accounts = await ethers.getContractAt("Accounts", accounts.address);
-  // const Items = await ethers.getContractAt("Items", items.address);
-
-  // await Accounts.setAccountManager(game.address);
-  // await Items.setItemManager(accounts.address, accounts.address);
-  // await Accounts.transferOwnership(game.address);
-  // await Items.transferOwnership(game.address);
 
   //Goerli
   // const LavxToken = await ethers.getContractAt(lavxABI, "0xCa349327df5590EC52c3b2EeF3d8cE3B307f1D6a")
