@@ -405,4 +405,9 @@ contract Accounts is
             account[playerId][player].items
         );
     }
+
+    function setTokenUri(uint256 tokenId, string memory playerTokenURI) public onlyOwner {
+        require(exists(tokenId));
+        super._setTokenURI(tokenId, playerTokenURI);
+    }
 }

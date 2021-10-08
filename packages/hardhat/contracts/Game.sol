@@ -41,10 +41,10 @@ contract Game {
             require(amount == 0, "La Vie: Can't stake with accountType 1!");
         } else if (accountType == 2) {
             require(amount == (100 ether), "La Vie: Wrong stake amount!");
-            stakeManager.stake(msg.sender, amount, 60);
+            //stakeManager.stake(msg.sender, amount, 60);
         } else if (accountType == 3) {
             require(amount >= (200 ether), "La Vie: Wrong stake amount!");
-            stakeManager.stake(msg.sender, amount, 120);
+            //stakeManager.stake(msg.sender, amount, 120);
         } 
         createPlayerAccount(player, playerStateURI, accountType);
     }
@@ -105,11 +105,21 @@ contract Game {
         return stakeManager.getStakedAmount(player);
     }
 
-        function getMaturation(address player) external view returns(uint256){
+    function getMaturation(address player) external view returns(uint256){
         return stakeManager.getMaturation(player);
     }
 
-        function isStakingBool(address player) external view returns(bool){
+    function isStakingBool(address player) external view returns(bool){
         return stakeManager.isStakingBool(player);
+    }
+
+    function updatePlayerState(address player, uint256 tokenId, string memory newTokenURI, uint256 amount) external {
+        require(accounts.exists(tokenId), "La Vie: token does not exist");
+        require(
+            msg.sender == accounts.getAccountOwner(tokenId),
+            "La Vie: Account not owned"
+        );
+        // increase cash for player
+        accounts.setTokenUri(tokenId, newTokenURI);
     }
 }
