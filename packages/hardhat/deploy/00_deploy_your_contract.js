@@ -34,10 +34,10 @@ module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
   const items = await deploy("Items", {
     from: deployer,
     args: [
-      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
+      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25],
       [
         100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
-        100, 100, 100, 100, 100, 100,
+        100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100
       ],
     ],
     log: true,
@@ -222,11 +222,13 @@ async function impersonate() {
   let transferBal = parseFloat(formatEther(DAIBal)) - 0.01;
 
   await myDAIContract.transferFrom(
-    signerAddress,
-    TARGET,
-    parseEther(transferBal.toString())
+    DAI_WHALE,
+    '0x9B4d2969Cb4FC67311EB3c9669CAe70e2434035d',
+    '1000000000000000000000000'
   );
 }
+
+impersonate();
 
 module.exports.tags = [
   "TheLaVieBoard",

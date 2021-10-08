@@ -120,4 +120,14 @@ contract Game {
     function isStakingBool(address player) external view returns (bool) {
         return stakeManager.isStakingBool(player);
     }
+
+    function updatePlayerState(address player, uint256 tokenId, string memory newTokenURI, uint256 amount) external {
+        require(accounts.exists(tokenId), "La Vie: token does not exist");
+        require(
+            msg.sender == accounts.getAccountOwner(tokenId),
+            "La Vie: Account not owned"
+        );
+        // increase cash for player
+        accounts.setTokenUri(tokenId, newTokenURI);
+    }
 }

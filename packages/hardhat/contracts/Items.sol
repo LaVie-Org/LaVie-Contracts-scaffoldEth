@@ -12,9 +12,11 @@ import "./Accounts.sol";
 //@dev will premint/new items
 //@dev will hold preminted items
 //@dev will safeTransfer premintednew items
-contract Items is ERC1155Supply, Ownable {
+contract Items is ERC1155, Ownable {
     address private ITEM_MANAGER;
     address private MARKETPLACE_OPERATOR;
+
+    mapping(uint256 => uint256) private _totalSupply;
 
     Accounts accountContract;
 
@@ -23,8 +25,16 @@ contract Items is ERC1155Supply, Ownable {
         _;
     }
 
-    constructor(uint256[] memory ids, uint256[] memory amounts) ERC1155('') {
+    constructor(uint256[] memory ids, uint256[] memory amounts) ERC1155('https://siasky.net/EACKHO_TowvwzA0e2FiH2AE6lz9r_gsfQfQ37JhSd4JcJg/{id}.json') {
         mintBatch(address(this), ids, amounts, "0x0");
+    }
+
+    function totalSupply(uint256 id) public view returns (uint256) {
+        return _totalSupply[id];
+    }
+
+    function exists(uint256 id) public view  returns (bool) {
+        return totalSupply(id) > 0;
     }
 
     function setItemManager(address itemManager, Accounts _account) public onlyOwner {
@@ -42,14 +52,26 @@ contract Items is ERC1155Supply, Ownable {
 
     function mint(address account, uint256 id, uint256 amount, bytes memory data) public onlyOwner onlyManager {
         _mint(account, id, amount, data);
+        _totalSupply[id] += amount;
     }
 
     function mintBatch(address to, uint256[] memory ids, uint256[] memory amounts, bytes memory data) public onlyOwner onlyManager {
         _mintBatch(to, ids, amounts, data);
+        for (uint256 i = 0; i < ids.length; ++i) {
+            _totalSupply[ids[i]] += amounts[i];
+        }
+    }
+
+    function burn(address account, uint256 id, uint256 amount) public onlyManager {
+        super._burn(account, id, amount);
+        _totalSupply[id] -= amount;
     }
 
     function burnBatch(address account, uint256[] memory ids, uint256[] memory amounts) public onlyManager {
         super._burnBatch(account, ids, amounts);
+        for (uint256 i = 0; i < ids.length; ++i) {
+            _totalSupply[ids[i]] -= amounts[i];
+        }
     }
 
     function transferFromGame(address from, address to, uint256 id, uint256 amount, bytes memory data) public onlyManager {
