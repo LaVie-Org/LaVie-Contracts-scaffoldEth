@@ -37,14 +37,21 @@ contract Game {
             accountType == 1 || accountType == 2 || accountType == 3,
             "La Vie: Wrong account type."
         );
+        require(
+            stakeType == 0 || stakeType == 1 || stakeType == 2,
+            "La Vie: Wrong stake type."
+        );
 
         if (accountType == 1) {
             require(amount == 0, "La Vie: Can't stake with accountType 1!");
+            console.log("stakeType %s chosen", stakeType);
         } else if (accountType == 2) {
             require(amount == (100 ether), "La Vie: Wrong stake amount!");
+            console.log("stakeType %s chosen", stakeType);
             stakeManager.stake(msg.sender, amount, 60, stakeType);
         } else if (accountType == 3) {
             require(amount >= (200 ether), "La Vie: Wrong stake amount!");
+            console.log("stakeType %s chosen", stakeType);
             stakeManager.stake(msg.sender, amount, 120, stakeType);
         }
         createPlayerAccount(player, playerStateURI, accountType);

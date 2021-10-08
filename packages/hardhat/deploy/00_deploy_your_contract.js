@@ -12,7 +12,7 @@ const DAIabi = require("../contracts/externalAbis/DAIabi.json");
 
 //RINKEBY
 const DAI_WHALE = "0xC2ad4f9799Dc7Cbc88958d1165bC43507664f3E0";
-const DAI_ADDRESS = "0x5592ec0cfb4dbc12d3ab100b257153436a1f0fea";
+const DAI_ADDRESS = "0x5592EC0cfb4dbc12D3aB100b257153436a1f0FEa";
 
 //ETHEREUM
 // const DAI_WHALE="0xB60C61DBb7456f024f9338c739B02Be68e3F545C"
@@ -45,7 +45,6 @@ module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
 
   stakeManager = await deploy("StakeManager", {
     from: deployer,
-    args: [DAI_ADDRESS],
     log: true,
   });
 
@@ -57,7 +56,6 @@ module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
 
   await deploy("DaiToken", {
     from: deployer,
-    args: [DAI_ADDRESS],
     log: true,
   });
 
@@ -125,7 +123,11 @@ module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
     parseEther("500000000000000000000")
   );
 
-
+  const deployerWallet = ethers.provider.getSigner()
+  await deployerWallet.sendTransaction({
+    to: StakeManager.address,
+    value: ethers.utils.parseEther("15")
+  })
 
   // console.log(await myDAIContract.)
   console.log("deployer: " + deployer);

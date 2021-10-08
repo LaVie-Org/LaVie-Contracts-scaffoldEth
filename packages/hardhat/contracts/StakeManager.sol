@@ -39,7 +39,6 @@ contract StakeManager is Ownable, IERC721Receiver {
     string public laVieImage =
         "https://siasky.net/BABQrpPo_hBwLBqVZP9LEc44f96zzi1KVXsW9GIqS2MmkQ";
 
-    ERC20 public daiToken;
     // LavToken public lavToken;
 
     //Rinkeby addresses
@@ -67,6 +66,8 @@ contract StakeManager is Ownable, IERC721Receiver {
         0xC79a56Af51Ec36738E965e88100e4570c5C77A93;
     address private constant cDAIAddress =
         0x6D7F0754FFeb405d23C51CE938289d4835bE3b14;
+    address private constant DAIAddress =
+        0x5592EC0cfb4dbc12D3aB100b257153436a1f0FEa;
 
     event Stake1(mphStruct nft);
     event Stake2(cmpStruct nft);
@@ -76,12 +77,15 @@ contract StakeManager is Ownable, IERC721Receiver {
     DInterestInterface pool;
     IVesting02 vesting;
     IERC20 Mph;
+    CErc20 cDAI;
+    IERC20 daiToken;
 
-    constructor(ERC20 _daiToken) {
-        daiToken = _daiToken;
+    constructor() {
+        daiToken = IERC20(DAIAddress);
         pool = DInterestInterface(DInterestPoolAddress);
         vesting = IVesting02(IVesting02Address);
         Mph = IERC20(MphAddress);
+        cDAI = CErc20(cDAIAddress);
     }
 
     /// Core function shells
@@ -101,12 +105,26 @@ contract StakeManager is Ownable, IERC721Receiver {
 
         // transfer
         daiToken.transferFrom(player, payable(address(this)), amount);
-
         console.log("transfered");
+
         if (stakeType == 1) {
+            console.log("supply to 88mph called");
             supplyDAITo88MPH(player, amount, timeInDays, stakeType);
         } else if (stakeType == 2) {
+            console.log("supply to CMP called");
             supplyDAIToCompound(player, amount, timeInDays, stakeType);
+        }
+    }
+
+    function unstake(address player) external onlyOwner {
+        require(
+            addressToStakeType[player] != 0,
+            "La Vie: Not currently staking!"
+        );
+        if (addressToStakeType[player] == 1) {
+            redeemDAIFrom88mph(player);
+        } else if (addressToStakeType[player] == 2) {
+            redeemDAIFromCMP(player);
         }
     }
 
@@ -166,44 +184,38 @@ contract StakeManager is Ownable, IERC721Receiver {
             block.timestamp + (timeInDays * 1 days)
         );
 
-        CErc20 cDAI = CErc20(0x6D7F0754FFeb405d23C51CE938289d4835bE3b14);
-
         // Amount of current exchange rate from cToken to underlying
         uint256 exchangeRateMantissa = cDAI.exchangeRateCurrent();
         emit MyLog("Exchange Rate (scaled up): ", exchangeRateMantissa);
+
+        console.log("Exchange Rate (scaled up): %s", exchangeRateMantissa);
 
         //Amount added to your supply balance this block
         uint256 supplyRateMantissa = cDAI.supplyRatePerBlock();
         emit MyLog("Supply Rate (scaled up): ", supplyRateMantissa);
 
+        console.log("Supply Rate (scaled up): %s", supplyRateMantissa);
+
         //Approve transfer on the DAI contract
         daiToken.approve(cDAIAddress, amount);
+
+        uint256 myBefore = mycDAIbalance();
 
         // Mint cTokens
         uint256 mintResult = cDAI.mint(amount);
 
+        uint256 myAfter = mycDAIbalance();
+
         addressToCmp[player].owner = player;
         addressToCmp[player].isStaking = true;
         addressToCmp[player].maturation = maturationTimestamp;
-        addressToCmp[player].cDAIAmount = mintResult;
+        addressToCmp[player].cDAIAmount = myAfter - myBefore;
 
         addressToStakeType[player] = stakeType;
 
         emit Stake2(addressToCmp[player]);
 
         return mintResult;
-    }
-
-    function unstake(address player) external onlyOwner {
-        require(
-            addressToStakeType[player] != 0,
-            "La Vie: Not currently staking!"
-        );
-        if (addressToStakeType[player] == 1) {
-            redeemDAIFrom88mph(player);
-        } else if (addressToStakeType[player] == 2) {
-            redeemDAIFromCMP(player);
-        }
     }
 
     function redeemDAIFrom88mph(address player) internal {
@@ -231,13 +243,13 @@ contract StakeManager is Ownable, IERC721Receiver {
 
         console.log(rewards);
 
-        Mph.transferFrom(address(this), payable(player), rewards);
+        Mph.transfer(player, rewards);
 
         uint256 virtualTokenAmount = type(uint256).max; // withdraw all funds
         bool early = false; // withdrawing after maturation​
         uint256 amount = pool.withdraw(depositID, virtualTokenAmount, early);
 
-        daiToken.transferFrom(address(this), payable(player), amount);
+        daiToken.transfer(player, amount);
 
         addressToMph[player].owner = address(0);
         addressToMph[player].isStaking = false;
@@ -264,16 +276,24 @@ contract StakeManager is Ownable, IERC721Receiver {
             "you dont own this stake!"
         );
 
-        CErc20 cDAI = CErc20(cDAIAddress);
-
         uint256 redeemResult;
 
-        cDAI.redeem(addressToCmp[player].cDAIAmount);
+        uint256 myDaiBefore = daiToken.balanceOf(address(this));
+
+        uint256 cDAIamount = addressToCmp[player].cDAIAmount;
+
+        redeemResult = cDAI.redeem(cDAIamount);
+
+        uint256 myDaiAfter = daiToken.balanceOf(address(this));
 
         emit MyLog("If this is not 0, there was an error", redeemResult);
         require(redeemResult == 0, "redeemResult error");
 
-        cDAI.transferFrom(address(this), payable(player), addressToCmp[player].cDAIAmount);
+        console.log("redeemResult: %s", redeemResult);
+
+        uint256 difference = myDaiAfter - myDaiBefore;
+
+        daiToken.transfer(player, difference);
 
         addressToCmp[player].owner = address(0);
         addressToCmp[player].isStaking = false;
@@ -311,7 +331,16 @@ contract StakeManager is Ownable, IERC721Receiver {
     }
 
     function getStakedAmount(address player) external view returns (uint256) {
-        return addressToMph[player].stakedAmount;
+        require(
+            addressToStakeType[player] != 0,
+            "La Vie: Not currently staking!"
+        );
+        if (addressToStakeType[player] == 1) {
+            return addressToMph[player].stakedAmount;
+        } else if (addressToStakeType[player] == 2) {
+            return addressToCmp[player].cDAIAmount;
+        }
+        return 0;
     }
 
     function getMaturation(address player) external view returns (uint64) {
@@ -319,6 +348,21 @@ contract StakeManager is Ownable, IERC721Receiver {
     }
 
     function isStakingBool(address player) external view returns (bool) {
-        return addressToMph[player].isStaking;
+        require(
+            addressToStakeType[player] != 0,
+            "La Vie: Not currently staking!"
+        );
+        if (addressToStakeType[player] == 1) {
+            return addressToMph[player].isStaking;
+        } else if (addressToStakeType[player] == 2) {
+            return addressToCmp[player].isStaking;
+        }
+        return false;
     }
+
+    function mycDAIbalance() public view returns (uint256) {
+        return cDAI.balanceOf(address(this));
+    }
+
+    receive() external payable {}
 }

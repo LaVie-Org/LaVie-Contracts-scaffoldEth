@@ -3,6 +3,8 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
 import "./Game.sol";
 
 contract DaiToken {
@@ -10,10 +12,14 @@ contract DaiToken {
     // address private constant DAI_ADDRESS =
     //     0x001B3B4d0F3714Ca98ba10F6042DaEbF0B1B7b6F;
 
-    ERC20 Dai;
+    //RINKEBY
+    address private constant DAI_ADDRESS =
+        0x5592EC0cfb4dbc12D3aB100b257153436a1f0FEa;
 
-    constructor(address DAI_ADDRESS) {
-        Dai = ERC20(DAI_ADDRESS);
+    IERC20 Dai;
+
+    constructor() {
+        Dai = IERC20(DAI_ADDRESS);
     }
 
     function balanceOf(address _owner) public view returns (uint256 balance) {

@@ -18,4 +18,6 @@ interface CErc20 {
         address dst,
         uint256 amount
     ) external returns (bool);
+
+    function balanceOf(address owner) external view returns (uint256);
 }
