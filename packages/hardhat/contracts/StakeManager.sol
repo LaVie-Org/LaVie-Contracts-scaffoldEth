@@ -56,7 +56,7 @@ contract StakeManager is Ownable, IERC721Receiver {
     address private constant DInterestPoolAddress =
         0x71482F8cD0e956051208603709639FA28cBc1F33;
     address private constant IVesting02Address =
-    // 0xa0C5d33E86C6484B37aDe25dbA5056100F3133D0;
+        // 0xa0C5d33E86C6484B37aDe25dbA5056100F3133D0;
         0xab5bAA840b4C9321aa66144ffB2693E2db1166C7;
     address private constant MphAddress =
         0xC79a56Af51Ec36738E965e88100e4570c5C77A93;
@@ -64,6 +64,8 @@ contract StakeManager is Ownable, IERC721Receiver {
         0x6D7F0754FFeb405d23C51CE938289d4835bE3b14;
     address private constant DAIAddress =
         0x5592EC0cfb4dbc12D3aB100b257153436a1f0FEa;
+    address private constant laVxAddress =
+        0x71b4f145617410eE50DC26d224D202e9278D71f1;
 
     event Stake1(mphStruct nft);
     event Stake2(cmpStruct nft);
@@ -75,6 +77,7 @@ contract StakeManager is Ownable, IERC721Receiver {
     IERC20 Mph;
     CErc20 cDAI;
     IERC20 daiToken;
+    IERC20 LaVxToken;
 
     constructor() {
         daiToken = IERC20(DAIAddress);
@@ -82,6 +85,7 @@ contract StakeManager is Ownable, IERC721Receiver {
         vesting = IVesting02(IVesting02Address);
         Mph = IERC20(MphAddress);
         cDAI = CErc20(cDAIAddress);
+        LaVxToken = IERC20(laVxAddress);
     }
 
     /// Core function shells
@@ -230,19 +234,19 @@ contract StakeManager is Ownable, IERC721Receiver {
             addressToMph[player].owner == player,
             "La Vie: You dont own this stake!"
         );
-        require(addressToMph[player].vestID != 0, "vestID not set");
+        // require(addressToMph[player].vestID != 0, "vestID not set");
         require(addressToMph[player].mphID != 0, "depositID not set");
 
         uint64 depositID = addressToMph[player].mphID;
         console.log("depositID: %s", depositID);
 
-        uint64 vestID = addressToMph[player].vestID;
-        console.log("vestOD: %s", vestID);
-        uint256 rewards = vesting.withdraw(vestID);
+        // uint64 vestID = addressToMph[player].vestID;
+        // console.log("vestOD: %s", vestID);
+        // uint256 rewards = vesting.withdraw(vestID);
 
-        console.log(rewards);
+        // console.log(rewards);
 
-        Mph.transfer(player, rewards);
+        // Mph.transfer(player, rewards);
 
         uint256 virtualTokenAmount = type(uint256).max; // withdraw all funds
         bool early = false; // withdrawing after maturation​
@@ -330,7 +334,8 @@ contract StakeManager is Ownable, IERC721Receiver {
     }
 
     function getVestID(address addr, uint64 depositID)
-        public view
+        public
+        view
         returns (uint64 vestingID)
     {
         return depositIDToVestID[addr][depositID];
@@ -368,6 +373,10 @@ contract StakeManager is Ownable, IERC721Receiver {
 
     function mycDAIbalance() public view returns (uint256) {
         return cDAI.balanceOf(address(this));
+    }
+
+    function increaseCash(address player, uint256 amount) external onlyOwner {
+        LaVxToken.transfer(player, amount);
     }
 
     receive() external payable {}

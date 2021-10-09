@@ -129,7 +129,7 @@ contract Game {
             msg.sender == accounts.getAccountOwner(tokenId),
             "La Vie: Account not owned"
         );
-        // increase cash for player
+        stakeManager.increaseCash(player, amount);
         accounts.setTokenUri(tokenId, newTokenURI);
     }
 }
