@@ -12,6 +12,7 @@ import "./interfaces/IVesting02.sol";
 import "./Accounts.sol";
 
 contract StakeManager is Ownable, IERC721Receiver {
+    
     struct mphStruct {
         address owner;
         bool isStaking;
@@ -40,14 +41,6 @@ contract StakeManager is Ownable, IERC721Receiver {
         "https://siasky.net/BABQrpPo_hBwLBqVZP9LEc44f96zzi1KVXsW9GIqS2MmkQ";
 
     // LavToken public lavToken;
-
-    //Rinkeby addresses
-    // address private constant DInterestPoolAddress =
-    //     0xB4Ffd2868E8aDa5293BBC1Bceb467AB3e53760Ac;
-    // address private constant IVesting02Address =
-    //     0xab5bAA840b4C9321aa66144ffB2693E2db1166C7;
-    // address private constant MphAddress =
-    //     0x59EE65726f0b886Ec924271B51A3c1e78F52d1FB;
 
     //Mainnet Ethereum
     // address private constant DInterestPoolAddress =
@@ -96,11 +89,11 @@ contract StakeManager is Ownable, IERC721Receiver {
         uint8 stakeType
     ) external onlyOwner {
         uint256 allowance = daiToken.allowance(player, address(this));
-        require(allowance >= amount, "check the token allowance");
-        require(timeInDays <= 365, "above maximum days");
+        require(allowance >= amount, "La Vie: Check the token allowance");
+        require(timeInDays <= 365, "La Vie: Above maximum days");
         require(
             amount > 0 && daiToken.balanceOf(player) >= amount,
-            "Not enough DAI tokens"
+            "La Vie: Not enough DAI tokens"
         );
 
         // transfer
@@ -108,10 +101,8 @@ contract StakeManager is Ownable, IERC721Receiver {
         console.log("transfered");
 
         if (stakeType == 1) {
-            console.log("supply to 88mph called");
             supplyDAITo88MPH(player, amount, timeInDays, stakeType);
         } else if (stakeType == 2) {
-            console.log("supply to CMP called");
             supplyDAIToCompound(player, amount, timeInDays, stakeType);
         }
     }
@@ -133,7 +124,7 @@ contract StakeManager is Ownable, IERC721Receiver {
         uint256 amount,
         uint256 timeInDays,
         uint8 stakeType
-    ) internal {
+    ) private {
         require(!(addressToMph[player].isStaking), "La Vie: Already staking!");
 
         uint64 maturationTimestamp = uint64(
@@ -177,7 +168,7 @@ contract StakeManager is Ownable, IERC721Receiver {
         uint256 amount,
         uint256 timeInDays,
         uint8 stakeType
-    ) public returns (uint256) {
+    ) private returns (uint256) {
         require(!(addressToCmp[player].isStaking), "La Vie: Already staking!");
 
         uint64 maturationTimestamp = uint64(
@@ -218,18 +209,18 @@ contract StakeManager is Ownable, IERC721Receiver {
         return mintResult;
     }
 
-    function redeemDAIFrom88mph(address player) internal {
+    function redeemDAIFrom88mph(address player) private {
         require(
             addressToMph[player].isStaking,
             "La Vie: Not currently staking!"
         );
         require(
             block.timestamp >= addressToMph[player].maturation,
-            "too early to unstake"
+            "La Vie: Too early to unstake"
         );
         require(
             addressToMph[player].owner == player,
-            "you dont own this stake!"
+            "La Vie: You dont own this stake!"
         );
         require(addressToMph[player].vestID != 0, "vestID not set");
         require(addressToMph[player].mphID != 0, "depositID not set");
@@ -262,18 +253,18 @@ contract StakeManager is Ownable, IERC721Receiver {
         emit Unstake(player, amount);
     }
 
-    function redeemDAIFromCMP(address player) internal {
+    function redeemDAIFromCMP(address player) private {
         require(
             addressToCmp[player].isStaking,
             "La Vie: Not currently staking!"
         );
         require(
             block.timestamp >= addressToCmp[player].maturation,
-            "too early to unstake"
+            "La Vie: Too early to unstake"
         );
         require(
             addressToCmp[player].owner == player,
-            "you dont own this stake!"
+            "La Vie: You dont own this stake!"
         );
 
         uint256 redeemResult;

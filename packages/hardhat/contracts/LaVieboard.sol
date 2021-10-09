@@ -208,7 +208,7 @@ contract TheLaVieBoard is ERC721URIStorage {
             amount <= LaVxToken.balanceOf(address(this)),
             "not enough balance"
         );
-        LaVxToken.transferFrom(address(this), sendToAddress, amount);
+        LaVxToken.transfer(sendToAddress, amount);
     }
 
     function toAsciiString(address x) internal pure returns (string memory) {

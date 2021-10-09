@@ -44,14 +44,11 @@ contract Game {
 
         if (accountType == 1) {
             require(amount == 0, "La Vie: Can't stake with accountType 1!");
-            console.log("stakeType %s chosen", stakeType);
         } else if (accountType == 2) {
             require(amount == (100 ether), "La Vie: Wrong stake amount!");
-            console.log("stakeType %s chosen", stakeType);
             stakeManager.stake(msg.sender, amount, 60, stakeType);
         } else if (accountType == 3) {
             require(amount >= (200 ether), "La Vie: Wrong stake amount!");
-            console.log("stakeType %s chosen", stakeType);
             stakeManager.stake(msg.sender, amount, 120, stakeType);
         }
         createPlayerAccount(player, playerStateURI, accountType);
@@ -121,7 +118,12 @@ contract Game {
         return stakeManager.isStakingBool(player);
     }
 
-    function updatePlayerState(address player, uint256 tokenId, string memory newTokenURI, uint256 amount) external {
+    function updatePlayerState(
+        address player,
+        uint256 tokenId,
+        string memory newTokenURI,
+        uint256 amount
+    ) external {
         require(accounts.exists(tokenId), "La Vie: token does not exist");
         require(
             msg.sender == accounts.getAccountOwner(tokenId),
