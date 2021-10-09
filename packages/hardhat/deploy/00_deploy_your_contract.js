@@ -34,10 +34,13 @@ module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
   const items = await deploy("Items", {
     from: deployer,
     args: [
-      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25],
+      [
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+        21, 22, 23, 24, 25,
+      ],
       [
         100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
-        100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100
+        100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
       ],
     ],
     log: true,
@@ -123,11 +126,11 @@ module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
     parseEther("500000000000000000000")
   );
 
-  const deployerWallet = ethers.provider.getSigner()
+  const deployerWallet = ethers.provider.getSigner();
   await deployerWallet.sendTransaction({
     to: StakeManager.address,
-    value: ethers.utils.parseEther("15")
-  })
+    value: ethers.utils.parseEther("15"),
+  });
 
   // console.log(await myDAIContract.)
   console.log("deployer: " + deployer);
@@ -140,22 +143,15 @@ module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
       (await myLaVxContract.allowance(deployer, LaVieBoard.address))
   );
 
-///////////gives error network connection??//////////////////
+  ///////////gives error network connection??//////////////////
 
   // const Game = await ethers.getContractAt("Game", game.address);
-  
-  // let tx = await Game.newPlayer(
-  //   deployer,
-  //   "54645",
-  //   3,
-  //   parseEther("200")
-  // );
-  // let receipt = await tx.wait();
-  // console.log(receipt);
+
+  // let tx = await Game.newPlayer(deployer, "54645", 3, parseEther("200"),1);
+  //  let receipt = await tx.wait();
+  //  console.log(receipt);
   // let events = receipt.events;
-  // console.log("events: "+events[1].args);
-
-
+  // console.log("events: " + events[1].args);
 
   //Goerli
   // const LavxToken = await ethers.getContractAt(lavxABI, "0xCa349327df5590EC52c3b2EeF3d8cE3B307f1D6a")
@@ -223,8 +219,8 @@ async function impersonate() {
 
   await myDAIContract.transferFrom(
     DAI_WHALE,
-    '0x9B4d2969Cb4FC67311EB3c9669CAe70e2434035d',
-    '1000000000000000000000000'
+    "0x9B4d2969Cb4FC67311EB3c9669CAe70e2434035d",
+    "1000000000000000000000000"
   );
 }
 

@@ -1,4 +1,6 @@
+pragma experimental ABIEncoderV2;
 pragma solidity ^0.8.4;
+
 //SPDX-License-Identifier: MIT
 
 import "hardhat/console.sol";
@@ -12,7 +14,6 @@ import "./interfaces/IVesting02.sol";
 import "./Accounts.sol";
 
 contract StakeManager is Ownable, IERC721Receiver {
-    
     struct mphStruct {
         address owner;
         bool isStaking;
@@ -31,6 +32,7 @@ contract StakeManager is Ownable, IERC721Receiver {
 
     mapping(address => mphStruct) private addressToMph;
     mapping(address => cmpStruct) private addressToCmp;
+    mapping(address => mapping(uint64 => uint64)) private depositIDToVestID;
 
     //0: not staking, 1: MPH staking, 2: CMP staking
     mapping(address => uint8) private addressToStakeType;
@@ -54,6 +56,7 @@ contract StakeManager is Ownable, IERC721Receiver {
     address private constant DInterestPoolAddress =
         0x71482F8cD0e956051208603709639FA28cBc1F33;
     address private constant IVesting02Address =
+    // 0xa0C5d33E86C6484B37aDe25dbA5056100F3133D0;
         0xab5bAA840b4C9321aa66144ffB2693E2db1166C7;
     address private constant MphAddress =
         0xC79a56Af51Ec36738E965e88100e4570c5C77A93;
@@ -144,16 +147,21 @@ contract StakeManager is Ownable, IERC721Receiver {
 
         console.log("mph deposit");
 
+        //  uint64 vestingID = vesting.getVestID(player, depositID);
+
+        //  console.log("vesting ID: %s",vestingID);
+
         addressToMph[player].owner = player;
         addressToMph[player].isStaking = true;
         addressToMph[player].maturation = maturationTimestamp;
         addressToMph[player].mphID = depositID;
+        // addressToMph[player].vestID = vestingID;
         addressToMph[player].stakedAmount = amount;
 
         console.log(
-            "Mph struct of %s: ID: %s with maturation of %s",
-            player,
+            "Mph struct of ID: %s with maturation of %s",
             addressToMph[player].mphID,
+            // addressToMph[player].vestID,
             addressToMph[player].maturation
         );
         console.log("depositID for %s : %s ", player, depositID);
@@ -319,6 +327,13 @@ contract StakeManager is Ownable, IERC721Receiver {
             "La Vie: No deposit for this account!"
         );
         addressToMph[player].vestID = vestID;
+    }
+
+    function getVestID(address addr, uint64 depositID)
+        public view
+        returns (uint64 vestingID)
+    {
+        return depositIDToVestID[addr][depositID];
     }
 
     function getStakedAmount(address player) external view returns (uint256) {
