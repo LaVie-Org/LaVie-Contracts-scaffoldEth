@@ -5,13 +5,17 @@ import "./Accounts.sol";
 
 import "./StakeManager.sol";
 
+import "./Items.sol";
+
 contract Game {
     Accounts private accounts;
     StakeManager private stakeManager;
+    Items private items;
 
-    constructor(Accounts _accounts, StakeManager _stakeManager) {
+    constructor(Accounts _accounts, StakeManager _stakeManager, Items _items) {
         accounts = _accounts;
         stakeManager = _stakeManager;
+        items = _items;
     }
 
     function newPlayer(
@@ -72,11 +76,25 @@ contract Game {
         return accounts.createAccount(player, playerStateURI, accountType);
     }
 
+    function playerReceivesRandomItemFromCrate(
+        address player,
+        uint256 tokenId,
+        uint8 tier
+    ) external {
+        require(accounts.exists(tokenId), "La Vie: token does not exist");
+        require(
+            msg.sender == accounts.getAccountOwner(tokenId),
+            "La Vie: Account not owned"
+        );
+        uint256 itemId = items.getRandomItemIDFromCrate(tier);
+        playerReceivesAnItem(player, tokenId, itemId);
+    }
+
     function playerReceivesAnItem(
         address player,
         uint256 tokenId,
         uint256 itemId
-    ) external {
+    ) public {
         require(accounts.itemExists(itemId), "La Vie: item does not exist");
         require(accounts.exists(tokenId), "La Vie: token does not exist");
         require(

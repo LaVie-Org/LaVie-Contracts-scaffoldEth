@@ -5,19 +5,32 @@ import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@chainlink/contracts/src/v0.8/VRFConsumerBase.sol";
 import "hardhat/console.sol";
 import "./Accounts.sol";
 
 //@dev will premint/new items
 //@dev will hold preminted items
 //@dev will safeTransfer premintednew items
-contract Items is ERC1155, Ownable {
+contract Items is ERC1155, Ownable, VRFConsumerBase {
     address private ITEM_MANAGER;
     address private MARKETPLACE_OPERATOR;
 
     mapping(uint256 => uint256) private _totalSupply;
 
     Accounts accountContract;
+
+    bytes32 internal keyHash;
+    uint256 internal fee;
+
+    uint256 public randomResult;
+
+    uint256[] private values100 = new uint256[](300);
+    uint256[] private values25 = new uint256[](300);
+    uint256[] private values17 = new uint256[](300);
+
+    address public temporaryOwner = 0x7b3813a943391465Dd62B648529c337e52FbA79b;
+    address public temporaryOwner2 = 0x7b3813a943391465Dd62B648529c337e52FbA79b;
 
     modifier onlyManager() {
         require(
@@ -31,8 +44,14 @@ contract Items is ERC1155, Ownable {
         ERC1155(
             "https://siasky.net/EACKHO_TowvwzA0e2FiH2AE6lz9r_gsfQfQ37JhSd4JcJg/{id}.json"
         )
+        VRFConsumerBase(
+            0xb3dCcb4Cf7a26f6cf6B120Cf5A73875B7BBc655B, // VRF Coordinator
+            0x01BE23585060835E02B77ef475b0Cc51aA1e0709 // LINK Token
+        )
     {
         mintBatch(address(this), ids, amounts, "0x0");
+        keyHash = 0x2ed0feb3e7fd2022120aa84fab1945545a9f2ffc9076fd6156fa96eaff4c1311;
+        fee = 0.1 * 10**18; // 0.1 LINK (Varies by network)
     }
 
     function totalSupply(uint256 id) public view returns (uint256) {
@@ -192,46 +211,116 @@ contract Items is ERC1155, Ownable {
         return super.isApprovedForAll(_owner, _operator);
     }
 
-    function getRandomItemFromCrate(uint8 tier) external onlyOwner{
-        // uint256[] memory rarityWeight;
-        // uint256[] memory weightedRareOrNot;
+    uint256 private random100Index = 0;
+    uint256 private randomom25Index = 0;
+    uint256 private random17Index = 0;
 
-        // uint256 currentIndex = 0;
-        // uint256 randomItemNumber = 0;
-        // uint256 randomNumber = 0;
+    function getRandomItemIDFromCrate(uint8 tier)
+        external
+        onlyOwner
+        returns (uint256)
+    {
+        //prepare random number
+        if (random100Index == 150) getRandomNumber();
 
-        // uint256[] memory rareOrNot = [0, 1];
+        //repopulate random numbers
+        if (random100Index == 280) populateRandoms();
 
-        // if (tier == 1) rarityWeight = [99, 1];
-        // else if (tier == 2) {
-        //     rarityWeight = [92, 8];
-        // } else if (tier == 3) {
-        //     rarityWeight = [86, 14];
-        // }
+        uint256[] memory rarityWeight;
+        uint256[] memory weightedRareOrNot;
 
-        // uint i = 0;
+        uint256 currentIndex = 0;
+        uint256 randomItemNumber = 0;
+        uint256 randomNumber = 0;
 
-        //   while (currentIndex < rareOrNot.length) {
-        //     for (i = 0; i < rarityWeight[currentIndex]; i++)
-        //       weightedRareOrNot[weightedRareOrNot.length] = rareOrNot[currentIndex];
-        //     currentIndex++;
-        //   }
-        //   randomNumber = Math.floor(Math.random() * 100);
-        //   console.log(weightedRareOrNot);
-        //   console.log(weightedRareOrNot[randomNumber]);
+        uint256[] memory rareOrNot;
+        rareOrNot[0] = 0;
+        rareOrNot[1] = 1;
 
-        //   if (weightedRareOrNot[randomNumber]) {
-        //     console.log("YOU GET A RARE ITEM CONGRATS!");
-        //     randomItemNumber = Math.floor(Math.random() * (25 - 18 + 1) + 18);
-        //   } else {
-        //     console.log("normal item..");
-        //     randomItemNumber = Math.floor(Math.random() * (17 - 1 + 1) + 1);
-        //   }
-        //   console.log("ItemID: " + randomItemNumber);
-        //   return randomItemNumber;
-        // }
+        if (tier == 1) {
+            rarityWeight[0] = 99;
+            rarityWeight[1] = 1;
+        } else if (tier == 2) {
+            rarityWeight[0] = 92;
+            rarityWeight[1] = 8;
+        } else if (tier == 3) {
+            rarityWeight[0] = 86;
+            rarityWeight[1] = 14;
+        }
 
-        // itemNumber = getRandomItemFromCrate(3);
-        // console.log(itemNumber);
+        uint256 i = 0;
+
+        while (currentIndex < rareOrNot.length) {
+            for (i = 0; i < rarityWeight[currentIndex]; i++)
+                weightedRareOrNot[weightedRareOrNot.length] = rareOrNot[
+                    currentIndex
+                ];
+            currentIndex++;
+        }
+        randomNumber = values100[random100Index];
+        random100Index++;
+
+        if (weightedRareOrNot[randomNumber] == 1) {
+            // get random rare item between 18 and 25
+            randomItemNumber = values25[randomom25Index];
+            randomom25Index++;
+        } else {
+            // get random normal item between 1 and 17
+            randomItemNumber = values17[random17Index];
+            random17Index++;
+        }
+
+        if (random100Index == 300) random100Index = 0;
+
+        if (random17Index == 300) random17Index = 0;
+
+        if (randomom25Index == 300) randomom25Index = 0;
+
+        return randomItemNumber;
+    }
+
+    function getRandomNumber() public returns (bytes32 requestId) {
+        require(
+            LINK.balanceOf(address(this)) >= fee,
+            "Not enough LINK - fill contract with faucet"
+        );
+        require(msg.sender == temporaryOwner, "La Vie: Not callable outside contract!");
+        temporaryOwner = address(this);
+        return requestRandomness(keyHash, fee);
+    }
+
+    /**
+     * Callback function used by VRF Coordinator
+     */
+    function fulfillRandomness(bytes32 requestId, uint256 randomness)
+        internal
+        override
+    {
+        randomResult = randomness;
+    }
+
+    function populateRandoms() public {
+        require(randomResult!=0,"La Vie: Wait a bit!");
+        require(msg.sender == temporaryOwner2, "La Vie: Not callable outside contract!");
+        temporaryOwner2 = address(this);
+
+        for (uint256 i = 0; i < 300; i++) {
+            values100[i] = (uint256(
+                ((keccak256(abi.encode((randomResult), i))))
+            ) % 100);
+        }
+        //18 to 25 rare items
+        for (uint256 i = 0; i < 300; i++) {
+            values25[i] = ((uint256(
+                ((keccak256(abi.encode((randomResult + 69), i))))
+            ) % (25 - 18 + 1)) + 18);
+        }
+        //1 to 17 normal items
+        for (uint256 i = 0; i < 300; i++) {
+            values17[i] =
+                (uint256(((keccak256(abi.encode((randomResult + 420), i))))) %
+                    17) +
+                1;
+        }
     }
 }

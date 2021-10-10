@@ -68,7 +68,7 @@ module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
 
   const game = await deploy("Game", {
     from: deployer,
-    args: [accounts.address, stakeManager.address],
+    args: [accounts.address, stakeManager.address, items.address],
     log: true,
   });
 
@@ -224,7 +224,7 @@ async function impersonate() {
   );
 }
 
-impersonate();
+// impersonate();
 
 module.exports.tags = [
   "TheLaVieBoard",
