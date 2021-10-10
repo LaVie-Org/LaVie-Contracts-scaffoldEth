@@ -4,6 +4,8 @@ pragma solidity >=0.8.0 <0.9.0;
 import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC777/ERC777.sol";
+
 import "./StakeManager.sol";
 
 contract LaVxToken {
@@ -11,10 +13,10 @@ contract LaVxToken {
     address private constant laVxAddress =
         0x71b4f145617410eE50DC26d224D202e9278D71f1;
 
-    ERC20 private laVxToken;
+    ERC777 private laVxToken;
 
     constructor() {
-        laVxToken = ERC20(laVxAddress);
+        laVxToken = ERC777(laVxAddress);
     }
 
     function approve(address _spender, uint256 _value)

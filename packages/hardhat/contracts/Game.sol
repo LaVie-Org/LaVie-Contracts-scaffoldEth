@@ -8,6 +8,8 @@ import "./StakeManager.sol";
 import "./Items.sol";
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC777/ERC777.sol";
+
 
 contract Game {
     Accounts private accounts;
@@ -16,7 +18,7 @@ contract Game {
     address private constant laVxAddress =
         0x71b4f145617410eE50DC26d224D202e9278D71f1;
 
-    IERC20 LaVxToken;
+    ERC777 LaVxToken;
 
     constructor(
         Accounts _accounts,
@@ -26,7 +28,7 @@ contract Game {
         accounts = _accounts;
         stakeManager = _stakeManager;
         items = _items;
-        LaVxToken = IERC20(laVxAddress);
+        LaVxToken = ERC777(laVxAddress);
     }
 
     function newPlayer(

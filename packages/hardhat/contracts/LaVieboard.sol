@@ -5,6 +5,8 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "hardhat/console.sol";
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC777/ERC777.sol";
+
 import {Base64} from "./libraries/Base64.sol";
 
 contract TheLaVieBoard is ERC721URIStorage {
@@ -21,7 +23,7 @@ contract TheLaVieBoard is ERC721URIStorage {
     address private constant laVxAddress =
         0x71b4f145617410eE50DC26d224D202e9278D71f1;
 
-    ERC20 private LaVxToken;
+    ERC777 private LaVxToken;
 
     event LaVieBoardUpdated(
         string first,
@@ -34,7 +36,7 @@ contract TheLaVieBoard is ERC721URIStorage {
     constructor() ERC721("LaVie Board", "LAVIEBOARD") {
         owner = msg.sender;
         _safeMint(msg.sender, 1);
-        LaVxToken = ERC20(laVxAddress);
+        LaVxToken = ERC777(laVxAddress);
     }
 
     function tokenURI(uint256 tokenId)
