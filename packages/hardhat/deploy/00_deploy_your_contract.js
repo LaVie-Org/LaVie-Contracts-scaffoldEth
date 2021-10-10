@@ -72,11 +72,11 @@ module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
     log: true,
   });
 
-  const laVxToken = await deploy("LaVxToken", {
-    from: deployer,
-    // args:
-    log: true,
-  });
+  // const laVxToken = await deploy("LaVxToken", {
+  //   from: deployer,
+  //   // args:
+  //   log: true,
+  // });
 
   const lavieboard = await deploy("TheLaVieBoard", {
     from: deployer,
@@ -96,11 +96,19 @@ module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
     stakeManager.address
   );
 
+  console.log("setting ownerships....");
   await Accounts.setAccountManager(game.address);
+  console.log("accountManager set");
   await Items.setItemManager(accounts.address, accounts.address);
+  console.log("itemManager set");
   await Accounts.transferOwnership(game.address);
+  console.log("Account owner set");
   await StakeManager.transferOwnership(game.address);
+  console.log("stakeManager owner set");
   await Items.transferOwnership(game.address);
+  console.log("Item owner set");
+
+  console.log("DONE DEPLOYING...........................");
 
   const DAI_ABI = [
     "function approve(address _spender, uint256 _value) public returns (bool success) ",
@@ -116,21 +124,21 @@ module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
     lavieboard.address
   );
 
-  await myDAIContract.approve(
-    StakeManager.address,
-    parseEther("500000000000000000000")
-  );
+  // await myDAIContract.approve(
+  //   StakeManager.address,
+  //   parseEther("500000000000000000000")
+  // );
 
-  await myLaVxContract.approve(
-    LaVieBoard.address,
-    parseEther("500000000000000000000")
-  );
+  // await myLaVxContract.approve(
+  //   LaVieBoard.address,
+  //   parseEther("500000000000000000000")
+  // );
 
-  const deployerWallet = ethers.provider.getSigner();
-  await deployerWallet.sendTransaction({
-    to: StakeManager.address,
-    value: ethers.utils.parseEther("15"),
-  });
+  // const deployerWallet = ethers.provider.getSigner();
+  // await deployerWallet.sendTransaction({
+  //   to: StakeManager.address,
+  //   value: ethers.utils.parseEther("2"),
+  // });
 
   // console.log(await myDAIContract.)
   console.log("deployer: " + deployer);
