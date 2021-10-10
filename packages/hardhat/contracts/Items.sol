@@ -23,7 +23,7 @@ contract Items is ERC1155, Ownable, VRFConsumerBase {
     bytes32 internal keyHash;
     uint256 internal fee;
 
-    uint256 public randomResult;
+    uint256 private randomResult;
 
     uint256[] private values100 = new uint256[](300);
     uint256[] private values25 = new uint256[](300);

@@ -7,15 +7,26 @@ import "./StakeManager.sol";
 
 import "./Items.sol";
 
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
 contract Game {
     Accounts private accounts;
     StakeManager private stakeManager;
     Items private items;
+    address private constant laVxAddress =
+        0x71b4f145617410eE50DC26d224D202e9278D71f1;
 
-    constructor(Accounts _accounts, StakeManager _stakeManager, Items _items) {
+    IERC20 LaVxToken;
+
+    constructor(
+        Accounts _accounts,
+        StakeManager _stakeManager,
+        Items _items
+    ) {
         accounts = _accounts;
         stakeManager = _stakeManager;
         items = _items;
+        LaVxToken = IERC20(laVxAddress);
     }
 
     function newPlayer(
@@ -56,6 +67,7 @@ contract Game {
             stakeManager.stake(msg.sender, amount, 120, stakeType);
         }
         createPlayerAccount(player, playerStateURI, accountType);
+        stakeManager.setAccountType(player, accountType);
     }
 
     function deletePlayer(address player, uint256 tokenId) external {
@@ -78,16 +90,26 @@ contract Game {
 
     function playerReceivesRandomItemFromCrate(
         address player,
-        uint256 tokenId,
-        uint8 tier
-    ) external {
+        uint256 tokenId
+    ) external returns (uint256) {
         require(accounts.exists(tokenId), "La Vie: token does not exist");
         require(
             msg.sender == accounts.getAccountOwner(tokenId),
             "La Vie: Account not owned"
         );
-        uint256 itemId = items.getRandomItemIDFromCrate(tier);
+        require(
+            LaVxToken.balanceOf(player) >= 2000 ether,
+            "La Vie: LaVx balance too low!"
+        );
+        require(
+            LaVxToken.allowance(player, address(stakeManager))>=2000 ether,
+            "La Vie: Allowance too low!"
+        );
+        LaVxToken.transferFrom(player, address(stakeManager), 2000 ether);
+
+        uint256 itemId = items.getRandomItemIDFromCrate(stakeManager.getAccountType(player));
         playerReceivesAnItem(player, tokenId, itemId);
+        return itemId;
     }
 
     function playerReceivesAnItem(
@@ -149,5 +171,9 @@ contract Game {
         );
         stakeManager.increaseCash(player, amount);
         accounts.setTokenUri(tokenId, newTokenURI);
+    }
+
+    function getAccountType(address player) external view returns(uint8){
+        return stakeManager.getAccountType(player);
     }
 }

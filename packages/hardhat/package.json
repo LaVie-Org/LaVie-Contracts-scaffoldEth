@@ -16,6 +16,7 @@
     "@eth-optimism/hardhat-ovm": "^0.2.2",
     "@ethersproject/contracts": "^5.4.1",
     "@nomiclabs/hardhat-ethers": "^2.0.2",
+    "@nomiclabs/hardhat-etherscan": "^2.1.6",
     "@nomiclabs/hardhat-waffle": "^2.0.0",
     "@openzeppelin/contracts": "4.3.2",
     "@superfluid-finance/js-sdk": "^0.5.4",

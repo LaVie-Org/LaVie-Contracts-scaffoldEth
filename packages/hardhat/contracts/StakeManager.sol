@@ -33,6 +33,7 @@ contract StakeManager is Ownable, IERC721Receiver {
     mapping(address => mphStruct) private addressToMph;
     mapping(address => cmpStruct) private addressToCmp;
     mapping(address => mapping(uint64 => uint64)) private depositIDToVestID;
+    mapping(address => uint8) addressToAccountType;
 
     //0: not staking, 1: MPH staking, 2: CMP staking
     mapping(address => uint8) private addressToStakeType;
@@ -234,19 +235,20 @@ contract StakeManager is Ownable, IERC721Receiver {
             addressToMph[player].owner == player,
             "La Vie: You dont own this stake!"
         );
-        // require(addressToMph[player].vestID != 0, "vestID not set");
         require(addressToMph[player].mphID != 0, "depositID not set");
 
         uint64 depositID = addressToMph[player].mphID;
         console.log("depositID: %s", depositID);
 
-        // uint64 vestID = addressToMph[player].vestID;
-        // console.log("vestOD: %s", vestID);
-        // uint256 rewards = vesting.withdraw(vestID);
+        if (addressToMph[player].vestID != 0) {
+            uint64 vestID = addressToMph[player].vestID;
+            console.log("vestID: %s", vestID);
+            uint256 rewards = vesting.withdraw(vestID);
 
-        // console.log(rewards);
+            console.log(rewards);
 
-        // Mph.transfer(player, rewards);
+            Mph.transfer(player, rewards);
+        }
 
         uint256 virtualTokenAmount = type(uint256).max; // withdraw all funds
         bool early = false; // withdrawing after maturation​
@@ -377,6 +379,17 @@ contract StakeManager is Ownable, IERC721Receiver {
 
     function increaseCash(address player, uint256 amount) external onlyOwner {
         LaVxToken.transfer(player, amount);
+    }
+
+    function setAccountType(address player, uint8 accountType)
+        external
+        onlyOwner
+    {
+        addressToAccountType[player] = accountType;
+    }
+
+    function getAccountType(address player) external view returns (uint8) {
+        return addressToAccountType[player];
     }
 
     receive() external payable {}

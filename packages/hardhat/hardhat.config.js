@@ -52,15 +52,15 @@ module.exports = {
   // (you will need to restart the `yarn run start` dev server after editing the .env)
 
   networks: {
-    // hardhat:{
-      // forking:{
-      //   url: process.env.RINKEBY,
+    hardhat:{
+      forking:{
+        url: process.env.RINKEBY,
       //   // accounts: [`0x${process.env.PRIVATE_KEY}`]
       //   accounts: {
       //     mnemonic: mnemonic(),
       //   },
-      // // },
-      // },
+      },
+      },
     localhost: {
       url: "http://localhost:8545",
       /*      
