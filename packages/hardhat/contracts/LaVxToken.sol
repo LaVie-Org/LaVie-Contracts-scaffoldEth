@@ -39,7 +39,11 @@ contract LaVxToken {
         return laVxToken.allowance(owner, spender);
     }
 
-    function transferFrom(address holder, address recipient, uint256 amount){
-        return laVxToken.transferFrom(holder,recipient,amount);
+    function transferFrom(
+        address _from,
+        address _to,
+        uint256 _value
+    ) public returns (bool success) {
+        return laVxToken.transferFrom(_from, _to, _value);
     }
 }
