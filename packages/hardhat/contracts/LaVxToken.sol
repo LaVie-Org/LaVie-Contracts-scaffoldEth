@@ -38,4 +38,8 @@ contract LaVxToken {
     {
         return laVxToken.allowance(owner, spender);
     }
+
+    function transferFrom(address holder, address recipient, uint256 amount){
+        return laVxToken.transferFrom(holder,recipient,amount);
+    }
 }
