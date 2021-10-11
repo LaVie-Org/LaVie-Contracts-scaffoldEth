@@ -124,15 +124,15 @@ module.exports = async ({ getNamedAccounts, deployments, ethers }) => {
     lavieboard.address
   );
 
-  // await myDAIContract.approve(
-  //   StakeManager.address,
-  //   parseEther("500000000000000000000")
-  // );
+  await myDAIContract.approve(
+    StakeManager.address,
+    parseEther("500000000000000000000")
+  );
 
-  // await myLaVxContract.approve(
-  //   LaVieBoard.address,
-  //   parseEther("500000000000000000000")
-  // );
+  await myLaVxContract.approve(
+    LaVieBoard.address,
+    parseEther("500000000000000000000")
+  );
 
   // const deployerWallet = ethers.provider.getSigner();
   // await deployerWallet.sendTransaction({

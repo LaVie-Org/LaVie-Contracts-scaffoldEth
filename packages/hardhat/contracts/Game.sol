@@ -7,7 +7,6 @@ import "./StakeManager.sol";
 
 import "./Items.sol";
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC777/ERC777.sol";
 
 
